@@ -1,5 +1,6 @@
 package tiameds.com.tiameds.services.auth;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -142,6 +143,67 @@ public class UserService {
         return userRepository.findById(userId);
     }
 
+    @Transactional
+    public User addModuleToUser(Long userId, String moduleName) {
+        // Find the user by ID
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        // Add the module to the user's modules set
+        user.getModules().add(moduleName);
+
+        // Save the updated user
+        return userRepository.save(user);
+    }
 
 
+    @Transactional
+    public User removeModuleFromUser(Long userId, String moduleName) {
+        // Find the user by ID
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        // Remove the module from the user's modules set if it exists
+        if (user.getModules().contains(moduleName)) {
+            user.getModules().remove(moduleName);
+        } else {
+            throw new IllegalArgumentException("Module not found for the user.");
+        }
+
+        // Save the updated user
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public User updateUser(Long userId, User user) {
+        // Find the user by ID
+        User existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        // Update only necessary fields
+        existingUser.setUsername(user.getUsername());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setFirstName(user.getFirstName());
+        existingUser.setLastName(user.getLastName());
+        existingUser.setPhone(user.getPhone());
+        existingUser.setAddress(user.getAddress());
+        existingUser.setCity(user.getCity());
+        existingUser.setState(user.getState());
+        existingUser.setZip(user.getZip());
+        existingUser.setCountry(user.getCountry());
+
+        // Update roles and modules with validation
+        if (user.getRoles() != null && !user.getRoles().isEmpty()) {
+            // Perform necessary role validation
+            existingUser.setRoles(user.getRoles());
+        }
+
+        if (user.getModules() != null && !user.getModules().isEmpty()) {
+            // Perform necessary module validation
+            existingUser.setModules(user.getModules());
+        }
+
+        // Save and return the updated user
+        return userRepository.save(existingUser);
+    }
 }

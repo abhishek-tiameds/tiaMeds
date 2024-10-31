@@ -127,5 +127,54 @@ public class AdminController {
         }
     }
 
+    //add module to user
+    @PostMapping("/{userId}/modules")
+    public ResponseEntity<?> addModuleToUser(@PathVariable Long userId, @RequestParam String moduleName) {
+        try {
+            User updatedUser = userService.addModuleToUser(userId, moduleName);
+            return ResponseEntity.ok(updatedUser);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("User not found.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while assigning the module.");
+        }
+    }
+
+
+    //delete module from user
+    @DeleteMapping("/{userId}/modules")
+    public ResponseEntity<?> removeModuleFromUser(@PathVariable Long userId, @RequestParam String moduleName) {
+        try {
+            User updatedUser = userService.removeModuleFromUser(userId, moduleName);
+            return ResponseEntity.ok(updatedUser);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("User not found.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Module not found for the user.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while removing the module.");
+        }
+    }
+
+    //update user
+    @PutMapping("/users/{userId}")
+    public ResponseEntity<?> updateUser(@PathVariable Long userId, @RequestBody User user) {
+        try {
+            User updatedUser = userService.updateUser(userId, user);
+            return ResponseEntity.ok(updatedUser);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("User not found.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while updating the user.");
+        }
+    }
+
 
 }
