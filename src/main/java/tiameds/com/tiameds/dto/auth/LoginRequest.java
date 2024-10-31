@@ -5,8 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class LoginResponse {
+public class LoginRequest {
     private String username;
-    private String token;
-    private List<String> roles; // To store user roles
+    private String password;
 }

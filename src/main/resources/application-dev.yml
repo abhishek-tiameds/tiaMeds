@@ -1,0 +1,35 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tiameds
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # or 'create' for development
+    show-sql: true       # Optional: Displays SQL queries in logs (useful for debugging)
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect  # Ensure PostgreSQL dialect is set
+
+  server:
+    port: 8080  # Port on which the application will run
+
+  security:
+    user:
+      name: user  # Default username (if needed)
+      password: password  # Default password (if needed)
+
+# Swagger configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /doc  # Change this to your desired path
+
+# Logging configuration
+logging:
+  level:
+    org.springframework: INFO  # Adjust logging level as needed
+    org.springframework.security: DEBUG  # Enable debug logging for Spring Security (optional)

@@ -5,61 +5,79 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import tiameds.com.tiameds.filter.JwtFilter;
 import tiameds.com.tiameds.services.auth.UserDetailsServiceImpl;
 
 @Configuration
 @EnableWebSecurity
 public class SpringSecurityConfig {
 
-    private final UserDetailsServiceImpl userDetailsService; // Hold a reference to UserDetailsServiceImpl
 
-    @Autowired // Spring will inject the UserDetailsServiceImpl bean here
-    public SpringSecurityConfig(UserDetailsServiceImpl userDetailsService) {
-        this.userDetailsService = userDetailsService; // Initialize the userDetailsService
+    private final JwtFilter jwtFilter;
+    private final UserDetailsServiceImpl userDetailsService;
+
+    @Autowired
+    public SpringSecurityConfig(JwtFilter jwtFilter, UserDetailsServiceImpl userDetailsService) {
+        this.jwtFilter = jwtFilter;
+        this.userDetailsService = userDetailsService;
     }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setPasswordEncoder(passwordEncoder());        // Set the password encoder
         return authProvider;
     }
 
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public/**").permitAll() // Allow public access
-                        .requestMatchers("/admin/**").hasRole("ADMIN") // Ensure correct role for admin access
-                        .anyRequest().authenticated() // All other requests require authentication
-                )
-                .httpBasic(Customizer.withDefaults()) // Use HTTP Basic Authentication
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Use stateless session
-                )
-                .csrf(AbstractHttpConfigurer::disable); // Disable CSRF protection
-
-        return http.build(); // Return the configured filter chain
+        return http
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeRequests(
+                        req -> req
+                                .requestMatchers("/login/**", "/register/**").permitAll()
+                                .requestMatchers(
+                                        "/v3/api-docs/**",
+                                        "/doc/**",
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html", // Updated this line
+                                        "/public/**"
+                                ).permitAll()
+                                .requestMatchers("/admin/**").hasRole("ADMIN")
+                                .anyRequest().authenticated()
+                ).userDetailsService(userDetailsService)
+                .sessionManagement(c -> c
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
+
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // Password encoder bean
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager(); // Provide AuthenticationManager
+        return configuration.getAuthenticationManager();
     }
+
+
 }
+
+
+
+
