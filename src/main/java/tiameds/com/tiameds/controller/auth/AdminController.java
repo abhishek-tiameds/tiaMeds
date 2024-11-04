@@ -39,61 +39,30 @@ public class AdminController {
         return "Welcome to the Admin Profile!";
     }
 
-    // get the list of all users
+
+    // ========================================= USER CRUD OPERATION  this is for super admin=========================================
+    // 1. get all users
+    // 2. get a user by ID
+    // 3. update a user
+    // 4. delete a user
+
     @GetMapping("/users")
     public ResponseEntity<List<User>> users() {
         List<User> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
     }
 
-    //get the list of all roles
-    @GetMapping("/roles")
-    public ResponseEntity<List<Role>> roles() {
-        List<Role> roles = userService.getAllRoles();
-        return ResponseEntity.ok(roles);
-    }
-
-    //create a new role
-    @PostMapping("/roles")
-    public ResponseEntity<Role> createRole(@RequestBody Role role) {
-        Role newRole = userService.saveRole(role);
-        return ResponseEntity.ok(newRole);
-    }
-
-    //assign a role to a user
-    @PostMapping("/users/{userId}/roles/{roleId}")
-    public ResponseEntity<?> assignRole(@PathVariable Long userId, @PathVariable Long roleId) {
+    @PutMapping("/users/{userId}")
+    public ResponseEntity<?> updateUser(@PathVariable Long userId, @RequestBody User user) {
         try {
-            User updatedUser = userService.assignRole(userId, Math.toIntExact(roleId));
-            // If the role assignment is successful, return the updated user
+            User updatedUser = userService.updateUser(userId, user);
             return ResponseEntity.ok(updatedUser);
         } catch (EntityNotFoundException e) {
-            // Handle the case where either the user or role is not found
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("User or Role not found.");
+                    .body("User not found.");
         } catch (Exception e) {
-            // Handle any other exceptions that might occur
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while assigning the role.");
-        }
-    }
-
-
-    //remove a role from a user
-    @DeleteMapping("/users/{userId}/roles/{roleId}")
-    public ResponseEntity<?> removeRole(@PathVariable Long userId, @PathVariable Long roleId) {
-        try {
-            User updatedUser = userService.removeRole(userId, Math.toIntExact(roleId));
-            // If the role removal is successful, return the updated user
-            return ResponseEntity.ok(updatedUser);
-        } catch (EntityNotFoundException e) {
-            // Handle the case where either the user or role is not found
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("User or Role not found.");
-        } catch (Exception e) {
-            // Handle any other exceptions that might occur
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while removing the role.");
+                    .body("An error occurred while updating the user.");
         }
     }
 
@@ -112,6 +81,64 @@ public class AdminController {
     }
 
 
+
+
+    // ========================================= ROLE CRUD OPERATION =========================================
+    // 1. Create a new role
+    // 2. Assign a role to a user
+    // 3. Remove a role from a user
+    // 4. Delete a role
+    // 5. Get a role by ID
+    // 6. Get all roles
+
+
+    // 1. Create a new role
+    @PostMapping("/roles")
+    public ResponseEntity<Role> createRole(@RequestBody Role role) {
+        Role newRole = userService.saveRole(role);
+        return ResponseEntity.ok(newRole);
+    }
+
+    // 2. Assign a role to a user
+    @PostMapping("/users/{userId}/roles/{roleId}")
+    public ResponseEntity<?> assignRole(@PathVariable Long userId, @PathVariable Long roleId) {
+        try {
+            User updatedUser = userService.assignRole(userId, Math.toIntExact(roleId));
+            // If the role assignment is successful, return the updated user
+            return ResponseEntity.ok(updatedUser);
+        } catch (EntityNotFoundException e) {
+            // Handle the case where either the user or role is not found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("User or Role not found.");
+        } catch (Exception e) {
+            // Handle any other exceptions that might occur
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while assigning the role.");
+        }
+    }
+
+
+    // 3. Remove a role from a user
+    @DeleteMapping("/users/{userId}/roles/{roleId}")
+    public ResponseEntity<?> removeRole(@PathVariable Long userId, @PathVariable Long roleId) {
+        try {
+            User updatedUser = userService.removeRole(userId, Math.toIntExact(roleId));
+            // If the role removal is successful, return the updated user
+            return ResponseEntity.ok(updatedUser);
+        } catch (EntityNotFoundException e) {
+            // Handle the case where either the user or role is not found
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("User or Role not found.");
+        } catch (Exception e) {
+            // Handle any other exceptions that might occur
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while removing the role.");
+        }
+    }
+
+
+
+    // 5. Get a role by ID
     @GetMapping("/users/{userId}")
     public ResponseEntity<?> getUser(@PathVariable Long userId) {
         try {
@@ -127,7 +154,29 @@ public class AdminController {
         }
     }
 
-    //add module to user
+    // 6. Get all roles
+    @GetMapping("/roles")
+    public ResponseEntity<?> roles() {
+        try {
+            List<Role> roles = userService.getAllRoles();
+            return ResponseEntity.ok(roles);
+        } catch (Exception e) {
+            // Log the exception (optional)
+            System.err.println("Error fetching roles: " + e.getMessage());
+            // Return a response entity with a generic error message and HTTP status
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while fetching roles.");
+        }
+    }
+
+
+
+
+    //============================== MODULE CRUD OPERATION ==============================
+    // 1. Add a module to a user
+    // 2. Remove a module from a user
+
+    // 1. Add a module to a user
     @PostMapping("/{userId}/modules")
     public ResponseEntity<?> addModuleToUser(@PathVariable Long userId, @RequestParam String moduleName) {
         try {
@@ -142,8 +191,7 @@ public class AdminController {
         }
     }
 
-
-    //delete module from user
+    // 2. Remove a module from a user
     @DeleteMapping("/{userId}/modules")
     public ResponseEntity<?> removeModuleFromUser(@PathVariable Long userId, @RequestParam String moduleName) {
         try {
@@ -158,21 +206,6 @@ public class AdminController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred while removing the module.");
-        }
-    }
-
-    //update user
-    @PutMapping("/users/{userId}")
-    public ResponseEntity<?> updateUser(@PathVariable Long userId, @RequestBody User user) {
-        try {
-            User updatedUser = userService.updateUser(userId, user);
-            return ResponseEntity.ok(updatedUser);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("User not found.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while updating the user.");
         }
     }
 

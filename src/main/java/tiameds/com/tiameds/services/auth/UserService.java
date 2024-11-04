@@ -206,4 +206,17 @@ public class UserService {
         // Save and return the updated user
         return userRepository.save(existingUser);
     }
+
+    public User addUser(User user) {
+        //check if user already exists
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new IllegalArgumentException("User already exists with username: " + user.getUsername());
+        }
+        //check if email already exists
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new IllegalArgumentException("User already exists with email: " + user.getEmail());
+        }
+        // Save the user
+        return userRepository.save(user);
+    }
 }

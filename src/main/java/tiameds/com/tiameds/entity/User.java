@@ -15,7 +15,7 @@ import java.util.Set;
 @Data
 @Entity
 @Table(name = "users")
-@ToString(exclude = "password")
+@ToString(exclude = {"password", "modules"})
 public class User {
 
     @Id
@@ -81,8 +81,9 @@ public class User {
     private Set<Role> roles = new HashSet<>();
 
     //add a new feild which contain list of module like PHARMACY, LAB, HOSPITAL
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_modules", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "module")
     private Set<String> modules = new HashSet<>();
+
 }
