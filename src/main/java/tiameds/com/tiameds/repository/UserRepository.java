@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import tiameds.com.tiameds.entity.User;
 
+import java.util.List;
 import java.util.Optional;
 
 @Transactional
@@ -23,5 +24,7 @@ public interface UserRepository extends CrudRepository<User, Long> {
     boolean existsByEmail(String email);
     Optional<User> findByEmail(String email);
     @NotNull Optional<User> findById(@NotNull Long id);
+
+    List<User> findByCreatedBy(User createdBy);
 
 }

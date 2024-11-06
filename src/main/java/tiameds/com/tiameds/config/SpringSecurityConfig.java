@@ -17,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import tiameds.com.tiameds.filter.JwtFilter;
 import tiameds.com.tiameds.services.auth.UserDetailsServiceImpl;
 
+
 @Configuration
 @EnableWebSecurity
 public class SpringSecurityConfig {
@@ -55,6 +56,7 @@ public class SpringSecurityConfig {
                                         "/public/**"
                                 ).permitAll()
                                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/lab/**").hasRole("USER")
                                 .anyRequest().authenticated()
                 ).userDetailsService(userDetailsService)
                 .sessionManagement(c -> c

@@ -1,4 +1,6 @@
 package tiameds.com.tiameds.entity;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -73,11 +75,7 @@ public class User {
     private LocalDateTime updatedAt;
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "users_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
+    @JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
     //add a new feild which contain list of module like PHARMACY, LAB, HOSPITAL
@@ -85,5 +83,19 @@ public class User {
     @CollectionTable(name = "user_modules", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "module")
     private Set<String> modules = new HashSet<>();
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by", referencedColumnName = "user_id")
+    private User createdBy;
+
+
+    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private Set<Lab> labs = new HashSet<>();
+
+
+    @ManyToMany(mappedBy = "members")
+    private Set<Lab> labsMember = new HashSet<>();
 
 }
