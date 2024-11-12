@@ -1,8 +1,9 @@
 package tiameds.com.tiameds.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -10,8 +11,10 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "labs")
 public class Lab {
@@ -44,17 +47,18 @@ public class Lab {
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by_user_id")
+    @JoinColumn(name = "created_by", referencedColumnName = "user_id")
+    @JsonBackReference
     private User createdBy;
 
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
-            name = "lab_users",
+            name = "lab_members",
             joinColumns = @JoinColumn(name = "lab_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    @JsonBackReference
-    private Set<User> members = new HashSet<>();
+    @JsonManagedReference
+    private Set<User> members  = new HashSet<>();
 
 }

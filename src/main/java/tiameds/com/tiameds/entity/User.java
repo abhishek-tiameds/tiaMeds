@@ -5,8 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -14,10 +13,13 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "users")
-@ToString(exclude = {"password", "modules"})
+@ToString(exclude = {"password", "labs", "createdBy"})
 public class User {
 
     @Id
@@ -90,12 +92,8 @@ public class User {
     private User createdBy;
 
 
-    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany(mappedBy = "members", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonManagedReference
     private Set<Lab> labs = new HashSet<>();
-
-
-    @ManyToMany(mappedBy = "members")
-    private Set<Lab> labsMember = new HashSet<>();
 
 }

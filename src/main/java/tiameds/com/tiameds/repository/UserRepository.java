@@ -27,4 +27,7 @@ public interface UserRepository extends CrudRepository<User, Long> {
 
     List<User> findByCreatedBy(User createdBy);
 
+    List<User> findByLabsId(Long labId);
+
+    boolean existsByIdAndLabsId(Long userId, Long labId);
 }

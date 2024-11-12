@@ -26,5 +26,4 @@ public class UserLabResponseDTO {
     private List<String> roles;
     private String createdByUsername;
     private String labName;
-
 }

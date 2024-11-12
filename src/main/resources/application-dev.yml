@@ -7,29 +7,30 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update  # or 'create' for development
-    show-sql: true       # Optional: Displays SQL queries in logs (useful for debugging)
+      ddl-auto: update  # 'create' for development; 'update' or 'none' for production
+    show-sql: true  # Optional: Shows SQL queries in logs
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect  # Ensure PostgreSQL dialect is set
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_batch_fetch_size: 10  # Batch size for collection loading
 
   server:
-    port: 8080  # Port on which the application will run
+    port: 8080  # Port on which the application runs
 
   security:
     user:
-      name: user  # Default username (if needed)
-      password: password  # Default password (if needed)
+      name: user  # Default user (for basic auth, if used)
+      password: password  # Default password
 
 # Swagger configuration
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
-    path: /doc  # Change this to your desired path
+    path: /doc  # Swagger UI path
 
 # Logging configuration
 logging:
   level:
-    org.springframework: INFO  # Adjust logging level as needed
-    org.springframework.security: DEBUG  # Enable debug logging for Spring Security (optional)
+    org.springframework: INFO  # General logging level
+    org.springframework.security: DEBUG  # Detailed logging for Spring Security (optional)
