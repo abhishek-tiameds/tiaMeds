@@ -61,4 +61,14 @@ public class Lab {
     @JsonManagedReference
     private Set<User> members  = new HashSet<>();
 
+
+    @OneToMany(mappedBy = "lab", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private Set<Test> tests = new HashSet<>();
+
+
+    @OneToMany(mappedBy = "lab", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private Set<HealthPackage> healthPackages = new HashSet<>();
+
 }

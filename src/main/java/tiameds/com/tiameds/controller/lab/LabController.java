@@ -22,26 +22,18 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/lab/admin")
 @Tag(name = "Lab Admin", description = "Endpoints for Lab Admin")
-public class UserLabController {
+public class LabController {
 
     private final UserLabService userService;
     private final LabRepository labRepository;
     private final UserAuthService userAuthService;
 
 
-    public UserLabController(UserLabService userService, LabRepository labRepository, UserAuthService userAuthService) {
+    public LabController(UserLabService userService, LabRepository labRepository, UserAuthService userAuthService) {
         this.userService = userService;
         this.labRepository = labRepository;
         this.userAuthService = userAuthService;
     }
-
-    //================================== List of lab API endpoints ===================================
-
-    // 1. Add Lab
-    // 2 Get Labs created by user
-    // 2. Update Lab
-    // 3. Delete Lab
-
 
     // create a new lab
     @PostMapping("/add-lab")
@@ -111,7 +103,6 @@ public class UserLabController {
         }
 
         User currentUser = currentUserOptional.get();
-
         // Fetch labs created by the user
         List<Lab> labs = labRepository.findByCreatedBy(currentUser);
 
@@ -221,5 +212,7 @@ public class UserLabController {
         ApiResponse<String> successResponse = new ApiResponse<>("success", "Lab updated successfully", null);
         return ResponseEntity.status(HttpStatus.OK).body(successResponse);
     }
+
+
 
 }

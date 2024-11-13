@@ -25,4 +25,5 @@ public interface LabRepository extends JpaRepository<Lab, Long> {
     Optional<Lab> findById(Long id);
 
 
+    Optional<Lab> findByMembers(User user);
 }
