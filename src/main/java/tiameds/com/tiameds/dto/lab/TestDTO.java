@@ -20,5 +20,5 @@ public class TestDTO {
     private BigDecimal price;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private long labId;  // Reference to the associated Lab's ID (optional if you only need basic info)
+    // Reference to the associated Lab's ID (optional if you only need basic info)
 }

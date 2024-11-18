@@ -34,7 +34,7 @@ public class Test {
     private String name;
 
     @Column(nullable = false)
-    private BigDecimal price;  // Changed to BigDecimal for better precision
+    private BigDecimal price;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -43,11 +43,11 @@ public class Test {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lab_id", nullable = false)
+    @ManyToMany(mappedBy = "tests", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonBackReference
-    private Lab lab;
+    private Set<Lab> labs = new HashSet<>();
 
-    @ManyToMany(mappedBy = "tests")
+    @ManyToMany(mappedBy = "tests", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonBackReference(value = "package-tests")
     private Set<HealthPackage> healthPackages = new HashSet<>();
 }

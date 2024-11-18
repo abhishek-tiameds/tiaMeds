@@ -3,7 +3,10 @@ package tiameds.com.tiameds.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -46,29 +49,51 @@ public class Lab {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY) // Good practice to use lazy fetching unless absolutely needed
     @JoinColumn(name = "created_by", referencedColumnName = "user_id")
     @JsonBackReference
     private User createdBy;
 
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(
             name = "lab_members",
             joinColumns = @JoinColumn(name = "lab_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     @JsonManagedReference
-    private Set<User> members  = new HashSet<>();
+    private Set<User> members = new HashSet<>();
 
-
-    @OneToMany(mappedBy = "lab", cascade = CascadeType.ALL, orphanRemoval = true)
+    //test
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "lab_tests",
+            joinColumns = @JoinColumn(name = "lab_id"),
+            inverseJoinColumns = @JoinColumn(name = "test_id")
+    )
     @JsonManagedReference
     private Set<Test> tests = new HashSet<>();
 
 
-    @OneToMany(mappedBy = "lab", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    //package
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "lab_packages",
+            joinColumns = @JoinColumn(name = "lab_id"),
+            inverseJoinColumns = @JoinColumn(name = "package_id")
+    )
+    @JsonManagedReference(value = "package-labs")
     private Set<HealthPackage> healthPackages = new HashSet<>();
 
+
+    public void addTest(Test test) {
+        this.tests.add(test);
+        test.getLabs().add(this);
+    }
+
+    public void removeTest(Test test) {
+        this.tests.remove(test);
+        test.getLabs().remove(this);
+    }
 }
+

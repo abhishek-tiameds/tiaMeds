@@ -34,3 +34,6 @@ logging:
   level:
     org.springframework: INFO  # General logging level
     org.springframework.security: DEBUG  # Detailed logging for Spring Security (optional)
+    com:
+      fasterxml:
+        jackson: DEBUG  # Enable detailed logging for Jackson (Deserialization issues)

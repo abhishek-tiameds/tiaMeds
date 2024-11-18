@@ -1,5 +1,6 @@
 package tiameds.com.tiameds.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -93,7 +94,7 @@ public class User {
 
 
     @ManyToMany(mappedBy = "members", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JsonManagedReference
+    @JsonBackReference
     private Set<Lab> labs = new HashSet<>();
 
 }
