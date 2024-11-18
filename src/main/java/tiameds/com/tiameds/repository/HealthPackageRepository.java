@@ -12,4 +12,7 @@ import java.util.Optional;
 @Repository
 public interface HealthPackageRepository extends JpaRepository<HealthPackage, Long> {
 
+    List<HealthPackage> findByLabs_Id(Long labId);
+
+    boolean existsByPackageName(String packageName);
 }

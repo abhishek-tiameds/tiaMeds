@@ -1,6 +1,7 @@
 package tiameds.com.tiameds.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
@@ -44,7 +45,8 @@ public class HealthPackage {
             joinColumns = @JoinColumn(name = "package_id"),
             inverseJoinColumns = @JoinColumn(name = "test_id")
     )
-    @JsonBackReference(value = "package-tests")
+//    @JsonBackReference(value = "package-tests")
+    @JsonManagedReference(value = "package-tests")
     private Set<Test> tests = new HashSet<>();
 
     @CreationTimestamp
