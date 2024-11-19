@@ -95,5 +95,27 @@ public class Lab {
         this.tests.remove(test);
         test.getLabs().remove(this);
     }
+
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "lab_doctors",
+            joinColumns = @JoinColumn(name = "lab_id"),
+            inverseJoinColumns = @JoinColumn(name = "doctor_id")
+    )
+    @JsonManagedReference
+    private Set<Doctors> doctors = new HashSet<>();
+
+
+    public void addDoctor(Doctors doctor) {
+        this.doctors.add(doctor);
+        doctor.getLabs().add(this);
+    }
+
+
+    public void removeDoctor(Doctors doctor) {
+        this.doctors.remove(doctor);
+        doctor.getLabs().remove(this);
+    }
 }
 
