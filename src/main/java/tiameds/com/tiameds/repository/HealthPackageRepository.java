@@ -15,4 +15,6 @@ public interface HealthPackageRepository extends JpaRepository<HealthPackage, Lo
     List<HealthPackage> findByLabs_Id(Long labId);
 
     boolean existsByPackageName(String packageName);
+
+
 }

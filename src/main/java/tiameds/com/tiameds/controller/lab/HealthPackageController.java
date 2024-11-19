@@ -3,6 +3,7 @@ package tiameds.com.tiameds.controller.lab;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import tiameds.com.tiameds.dto.lab.HealthPackageRequest;
 import tiameds.com.tiameds.entity.HealthPackage;
@@ -232,7 +233,7 @@ public class HealthPackageController {
 
 
 
-    //delete package
+    //delete package by their respective id
     @DeleteMapping("{labId}/package/{packageId}")
     public ResponseEntity<?> deleteHealthPackage(
             @PathVariable("labId") Long labId,
@@ -252,24 +253,37 @@ public class HealthPackageController {
             return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
         }
 
-        // Fetch the package and check if it exists
-        HealthPackage healthPackage = healthPackageRepository.findById(packageId)
-                .orElseThrow(() -> new RuntimeException("Health package not found"));
+        // Fetch the health package based on the provided package ID
+        var healthPackageOptional = healthPackageRepository.findById(packageId);
 
-        // Check if the package is associated with the given lab
-        if (!healthPackage.getLabs().contains(lab)) {
-            return ApiResponseHelper.errorResponse("Health package is not associated with this lab", HttpStatus.BAD_REQUEST);
+        // Check if the health package exists
+        if (healthPackageOptional.isEmpty()) {
+            return ApiResponseHelper.errorResponse("Health package not found", HttpStatus.NOT_FOUND);
         }
 
-        // Delete the health package
+        HealthPackage healthPackage = healthPackageOptional.get();
+
+        // Check if the health package is associated with the lab
+        if (!healthPackage.getLabs().contains(lab)) {
+            return ApiResponseHelper.errorResponse("Health package not associated with this lab", HttpStatus.NOT_FOUND);
+        }
+
+        // Remove the association of the health package with the lab
+        lab.getHealthPackages().remove(healthPackage);
+
+        // Save the updated lab to ensure the association is removed
+        labRepository.save(lab);
+
+        // Delete the health package from the database
         healthPackageRepository.delete(healthPackage);
 
         // Return the success response
         return ApiResponseHelper.successResponse(
                 "Health package deleted successfully",
-                HttpStatus.OK
+                null
         );
     }
+
 
 
 
