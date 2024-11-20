@@ -21,8 +21,8 @@ public class ApiResponseHelper {
         return ResponseEntity.ok(response);
     }
 
-    public static <T> ResponseEntity<ApiResponse<T>> errorResponseWithData(String message, T data, HttpStatus status) {
+    public static <T> ResponseEntity<ApiResponse<T>> errorResponseWithData(String message, T data) {
         ApiResponse<T> response = new ApiResponse<>("error", message, data);
-        return ResponseEntity.status(status).body(response);
+        return ResponseEntity.ok(response);
     }
 }

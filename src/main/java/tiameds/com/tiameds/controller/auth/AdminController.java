@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import tiameds.com.tiameds.entity.Role;
 import tiameds.com.tiameds.entity.User;
 import tiameds.com.tiameds.services.auth.UserService;
+import tiameds.com.tiameds.utils.ApiResponseHelper;
 
 
 import java.util.List;
@@ -144,7 +145,7 @@ public class AdminController {
         try {
             User user = userService.getUser(userId)
                     .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
-            return ResponseEntity.ok(user);
+            return ApiResponseHelper.successResponse("User fetched successfully", user);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("User not found.");
@@ -180,6 +181,10 @@ public class AdminController {
     // get a module by ID
     // delete a module
     //update a module
+
+
+
+
 
 
 }

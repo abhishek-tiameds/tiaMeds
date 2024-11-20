@@ -1,6 +1,6 @@
 package tiameds.com.tiameds.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,7 +32,7 @@ public class ModuleEntity {
 
     @ManyToMany(mappedBy = "modules",
             fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonBackReference
+    @JsonIgnore
     private Set<User> users = new HashSet<>();
 
     @CreationTimestamp

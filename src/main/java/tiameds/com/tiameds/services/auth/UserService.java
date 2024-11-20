@@ -151,43 +151,6 @@ public class UserService {
         return userRepository.findById(userId);
     }
 
-//    @Transactional
-//    public User addModuleToUser(Long userId, String moduleName) {
-//        // Find the user by ID
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-//
-//        //check if module already exists
-//        if (user.getModules().contains(moduleName)) {
-//            throw new IllegalArgumentException("Module already exists for the user.");
-//        }
-//
-//        // Add the module to the user's modules set
-//
-//        // Add the module to the user's modules set
-//        user.getModules().add(moduleName);
-//
-//        // Save the updated user
-//        return userRepository.save(user);
-//    }
-
-
-    @Transactional
-    public User removeModuleFromUser(Long userId, String moduleName) {
-        // Find the user by ID
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-
-        // Remove the module from the user's modules set if it exists
-        if (user.getModules().contains(moduleName)) {
-            user.getModules().remove(moduleName);
-        } else {
-            throw new IllegalArgumentException("Module not found for the user.");
-        }
-
-        // Save the updated user
-        return userRepository.save(user);
-    }
 
     @Transactional
     public User updateUser(Long userId, User user) {
@@ -222,16 +185,4 @@ public class UserService {
         return userRepository.save(existingUser);
     }
 
-    public User addUser(User user) {
-        //check if user already exists
-        if (userRepository.existsByUsername(user.getUsername())) {
-            throw new IllegalArgumentException("User already exists with username: " + user.getUsername());
-        }
-        //check if email already exists
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new IllegalArgumentException("User already exists with email: " + user.getEmail());
-        }
-        // Save the user
-        return userRepository.save(user);
-    }
 }
