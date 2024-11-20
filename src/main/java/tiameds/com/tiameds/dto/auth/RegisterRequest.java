@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
-import java.util.Set;
+import java.util.List;
 
 
 @Data
@@ -51,7 +51,6 @@ public class RegisterRequest {
     @JsonProperty("verified")
     private boolean isVerified;
 
-    @NotNull(message = "Modules cannot be null")
-    private Set<String> modules;
+    private List<Long> modules;
 
 }

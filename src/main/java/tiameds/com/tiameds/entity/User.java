@@ -81,11 +81,11 @@ public class User {
     @JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
-    //add a new feild which contain list of module like PHARMACY, LAB, HOSPITAL
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_modules", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "module")
-    private Set<String> modules = new HashSet<>();
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @JoinTable(name = "users_modules", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "module_id"))
+    @JsonManagedReference
+    private Set<ModuleEntity> modules = new HashSet<>();
 
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -2,6 +2,7 @@ package tiameds.com.tiameds.dto.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import tiameds.com.tiameds.dto.lab.ModuleDTO;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class LoginResponse {
     private List<String> roles;
     @JsonProperty("is_verified")
     private boolean isVerified;
-    private List<String> modules;
+    private List<ModuleDTO> modules;
     private String phone;
     private String address;
     private String city;

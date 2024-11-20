@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tiameds.com.tiameds.entity.Role;
 import tiameds.com.tiameds.entity.User;
+import tiameds.com.tiameds.repository.ModuleRepository;
 import tiameds.com.tiameds.repository.RoleRepository;
 import tiameds.com.tiameds.repository.UserRepository;
 
@@ -21,12 +22,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final ModuleRepository moduleRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository, RoleRepository roleRepository) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, ModuleRepository moduleRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
-
+        this.moduleRepository = moduleRepository;
     }
 
     @Transactional
@@ -36,10 +38,10 @@ public class UserService {
         }
 
         // Find or create the USER role
-        Role userRole = roleRepository.findByName("USER")
+        Role userRole = roleRepository.findByName("ADMIN")
                 .orElseGet(() -> {
                     Role newRole = new Role();
-                    newRole.setName("USER");
+                    newRole.setName("ADMIN");
                     try {
                         return roleRepository.save(newRole);
                     } catch (Exception e) {
@@ -53,6 +55,10 @@ public class UserService {
         roles.add(userRole);
         user.setRoles(roles);
 
+
+
+
+
         log.info("Assigning roles to user: {} with roles: {}", user.getUsername(), roles);
         try {
             userRepository.save(user);
@@ -61,6 +67,8 @@ public class UserService {
             throw new RuntimeException("User could not be saved", e);
         }
     }
+
+
 
     public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
@@ -143,18 +151,25 @@ public class UserService {
         return userRepository.findById(userId);
     }
 
-    @Transactional
-    public User addModuleToUser(Long userId, String moduleName) {
-        // Find the user by ID
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-
-        // Add the module to the user's modules set
-        user.getModules().add(moduleName);
-
-        // Save the updated user
-        return userRepository.save(user);
-    }
+//    @Transactional
+//    public User addModuleToUser(Long userId, String moduleName) {
+//        // Find the user by ID
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+//
+//        //check if module already exists
+//        if (user.getModules().contains(moduleName)) {
+//            throw new IllegalArgumentException("Module already exists for the user.");
+//        }
+//
+//        // Add the module to the user's modules set
+//
+//        // Add the module to the user's modules set
+//        user.getModules().add(moduleName);
+//
+//        // Save the updated user
+//        return userRepository.save(user);
+//    }
 
 
     @Transactional

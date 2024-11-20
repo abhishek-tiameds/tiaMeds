@@ -1,5 +1,4 @@
 package tiameds.com.tiameds.controller.auth;
-
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -15,15 +14,15 @@ import org.springframework.web.bind.annotation.*;
 import tiameds.com.tiameds.dto.auth.LoginRequest;
 import tiameds.com.tiameds.dto.auth.LoginResponse;
 import tiameds.com.tiameds.dto.auth.RegisterRequest;
+import tiameds.com.tiameds.dto.lab.ModuleDTO;
+import tiameds.com.tiameds.entity.ModuleEntity;
 import tiameds.com.tiameds.entity.User;
+import tiameds.com.tiameds.repository.ModuleRepository;
 import tiameds.com.tiameds.services.auth.UserDetailsServiceImpl;
 import tiameds.com.tiameds.services.auth.UserService;
 import tiameds.com.tiameds.utils.JwtUtil;
 import tiameds.com.tiameds.entity.Role;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -38,14 +37,16 @@ public class UserController {
     private final UserDetailsServiceImpl userDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtils;
+    private final ModuleRepository moduleRepository;
 
     @Autowired
-    public UserController(UserService userService, AuthenticationManager authenticationManager, UserDetailsServiceImpl userDetailsService, PasswordEncoder passwordEncoder, JwtUtil jwtUtils) {
+    public UserController(UserService userService, AuthenticationManager authenticationManager, UserDetailsServiceImpl userDetailsService, PasswordEncoder passwordEncoder, JwtUtil jwtUtils, ModuleRepository moduleRepository) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
+        this.moduleRepository = moduleRepository;
     }
 
 
@@ -55,42 +56,35 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest registerRequest) {
 
-        // check feild is empty or not
-        if (registerRequest.getUsername().isEmpty() || registerRequest.getPassword().isEmpty() || registerRequest.getEmail().isEmpty() || registerRequest.getFirstName().isEmpty() || registerRequest.getLastName().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please fill all the fields");
-        }
-
-        // check email is valid or not
-        if (!registerRequest.getEmail().contains("@") || !registerRequest.getEmail().contains(".")) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please enter a valid email");
-        }
-
-        // check password length
-        if (registerRequest.getPassword().length() < 8) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Password must be at least 8 characters long");
-        }
-
-        // check username length
-        if (registerRequest.getUsername().length() < 4) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Username must be at least 4 characters long");
-        }
-
-        // check email is already exist or not
-        if (userService.existsByEmail(registerRequest.getEmail())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already exists");
-        }
-
-        // check username is already exist or not
+        // Check if the username is already taken
         if (userService.existsByUsername(registerRequest.getUsername())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Username already exists");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Username is already taken");
         }
 
-        // Create a new user
+        // Check if the email is already taken
+        if (userService.existsByEmail(registerRequest.getEmail())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email is already taken");
+        }
+
+
+        // Fetch the modules based on the module IDs from the RegisterRequest
+        List<Long> moduleIds = registerRequest.getModules();
+        Set<ModuleEntity> modules = new HashSet<>();
+
+        // Iterate over the moduleIds and fetch corresponding ModuleEntity objects
+        for (Long moduleId : moduleIds) {
+            Optional<ModuleEntity> moduleOptional = moduleRepository.findById(moduleId);
+            if (!moduleOptional.isPresent()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Module with ID " + moduleId + " not found");
+            }
+            modules.add(moduleOptional.get());
+        }
+        // Create a new User
         User user = new User();
         user.setUsername(registerRequest.getUsername());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));  // Encrypt password
         user.setEmail(registerRequest.getEmail());
         user.setFirstName(registerRequest.getFirstName());
         user.setLastName(registerRequest.getLastName());
@@ -101,11 +95,13 @@ public class UserController {
         user.setZip(registerRequest.getZip());
         user.setCountry(registerRequest.getCountry());
         user.setVerified(registerRequest.isVerified());
-        user.setModules(registerRequest.getModules());
-        user.setEnabled(true);
+        user.setEnabled(true); // Enable the user by default
 
-        // Save the user
+        user.setModules(modules);
+
+        // Save the user (assuming the save method exists in the UserService)
         userService.saveUser(user);
+
         return ResponseEntity.ok("User registered successfully");
     }
 
@@ -138,7 +134,15 @@ public class UserController {
                 .collect(Collectors.toList());
 
 
-        List<String> modules = new ArrayList<>(user.getModules());
+        //fetch modules
+        Set<ModuleEntity> modules = user.getModules();
+        List<ModuleDTO> moduleDTOList = new ArrayList<>();
+        for (ModuleEntity module : modules) {
+            ModuleDTO moduleDTO = new ModuleDTO();
+            moduleDTO.setId(module.getId());
+            moduleDTO.setName(module.getName());
+            moduleDTOList.add(moduleDTO);
+        }
 
 
 
@@ -158,9 +162,7 @@ public class UserController {
         loginResponse.setCountry(user.getCountry());
         loginResponse.setVerified(user.isVerified());
         loginResponse.setEnabled(user.isEnabled());
-        loginResponse.setModules(modules);
-
-        // Return the response with token and user details including roles
+        loginResponse.setModules(moduleDTOList);
         return ResponseEntity.ok(loginResponse);
     }
 

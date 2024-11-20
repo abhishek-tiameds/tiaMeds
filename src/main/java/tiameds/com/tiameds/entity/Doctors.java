@@ -37,7 +37,6 @@ public class Doctors {
 
     @Email(message = "Invalid email address")
     @NotBlank(message = "Email is required")
-    @Column(nullable = false, unique = true)
     private String email;
 
     @NotBlank(message = "Speciality is required")
@@ -56,7 +55,6 @@ public class Doctors {
     private String hospitalAffiliation;
 
     @NotBlank(message = "License number is required")
-    @Column(nullable = false, unique = true)
     private String licenseNumber;
 
     @NotBlank(message = "Phone is required")

@@ -173,41 +173,13 @@ public class AdminController {
 
 
     //============================== MODULE CRUD OPERATION ==============================
-    // 1. Add a module to a user
-    // 2. Remove a module from a user
-
-    // 1. Add a module to a user
-    @PostMapping("/{userId}/modules")
-    public ResponseEntity<?> addModuleToUser(@PathVariable Long userId, @RequestParam String moduleName) {
-        try {
-            User updatedUser = userService.addModuleToUser(userId, moduleName);
-            return ResponseEntity.ok(updatedUser);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("User not found.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while assigning the module.");
-        }
-    }
-
-    // 2. Remove a module from a user
-    @DeleteMapping("/{userId}/modules")
-    public ResponseEntity<?> removeModuleFromUser(@PathVariable Long userId, @RequestParam String moduleName) {
-        try {
-            User updatedUser = userService.removeModuleFromUser(userId, moduleName);
-            return ResponseEntity.ok(updatedUser);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("User not found.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Module not found for the user.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while removing the module.");
-        }
-    }
+    //1 create a module
+    //2 get all modules
+    // assign a module to a user
+    // remove a module from a user
+    // get a module by ID
+    // delete a module
+    //update a module
 
 
 }

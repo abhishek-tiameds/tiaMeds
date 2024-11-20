@@ -219,7 +219,7 @@ public class LabMemberController {
         user.setZip(registerRequest.getZip());
         user.setCountry(registerRequest.getCountry());
         user.setVerified(registerRequest.isVerified());
-        user.setModules(registerRequest.getModules());
+//        user.setModules(registerRequest.getModules());
         user.setEnabled(true);
         user.setCreatedBy(currentUser);
 
@@ -291,7 +291,7 @@ public class LabMemberController {
         userToUpdate.setZip(registerRequest.getZip());
         userToUpdate.setCountry(registerRequest.getCountry());
         userToUpdate.setVerified(registerRequest.isVerified());
-        userToUpdate.setModules(registerRequest.getModules());
+//        userToUpdate.setModules(registerRequest.getModules());
         userToUpdate.setEnabled(true);
         userToUpdate.setCreatedBy(currentUser);
         // Save the user
