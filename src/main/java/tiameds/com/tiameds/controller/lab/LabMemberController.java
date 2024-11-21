@@ -10,15 +10,19 @@ import org.springframework.web.bind.annotation.*;
 import tiameds.com.tiameds.dto.auth.RegisterRequest;
 import tiameds.com.tiameds.dto.lab.UserInLabDTO;
 import tiameds.com.tiameds.entity.Lab;
+import tiameds.com.tiameds.entity.ModuleEntity;
 import tiameds.com.tiameds.entity.User;
 import tiameds.com.tiameds.repository.LabRepository;
+import tiameds.com.tiameds.repository.ModuleRepository;
 import tiameds.com.tiameds.services.auth.UserService;
 import tiameds.com.tiameds.services.lab.UserLabService;
 import tiameds.com.tiameds.utils.ApiResponseHelper;
 import tiameds.com.tiameds.utils.UserAuthService;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -31,18 +35,22 @@ public class LabMemberController {
     private LabRepository labRepository;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private ModuleRepository moduleRepository;
 
     @Autowired
     public LabMemberController(
             UserLabService userLabService,
             UserAuthService userAuthService,
             LabRepository labRepository, UserService userService,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            ModuleRepository moduleRepository
+    ) {
         this.userLabService = userLabService;
         this.userAuthService = userAuthService;
         this.labRepository = labRepository;
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+        this.moduleRepository = moduleRepository;
     }
 
     @PostMapping("/add-member/{labId}/member/{userId}")
@@ -164,6 +172,20 @@ public class LabMemberController {
             return ApiResponseHelper.errorResponse("User not found or unauthorized", HttpStatus.UNAUTHORIZED);
 
 
+        // get the module of the user
+        List<Long> moduleIds = registerRequest.getModules();
+        Set<ModuleEntity> modules = new HashSet<>();
+
+        // Iterate over the moduleIds and fetch corresponding ModuleEntity objects
+        for (Long moduleId : moduleIds) {
+            Optional<ModuleEntity> moduleOptional = moduleRepository.findById(moduleId);
+            if (!moduleOptional.isPresent()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Module with ID " + moduleId + " not found");
+            }
+            modules.add(moduleOptional.get());
+        }
+
+
         // Check if the lab exists
         Lab lab = labRepository.findById(labId).orElse(null);
         if (lab == null)
@@ -219,9 +241,10 @@ public class LabMemberController {
         user.setZip(registerRequest.getZip());
         user.setCountry(registerRequest.getCountry());
         user.setVerified(registerRequest.isVerified());
-//        user.setModules(registerRequest.getModules());
         user.setEnabled(true);
         user.setCreatedBy(currentUser);
+
+        user.setModules(modules);
 
         // Save the user
         userService.saveUser(user);

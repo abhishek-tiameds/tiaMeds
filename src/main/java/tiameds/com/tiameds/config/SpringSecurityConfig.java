@@ -56,7 +56,7 @@ public class SpringSecurityConfig {
                                         "/public/**"
                                 ).permitAll()
                                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                                .requestMatchers("/lab/**").hasRole("USER")
+                                .requestMatchers("/lab/**").hasRole("ADMIN")
                                 .anyRequest().authenticated()
                 ).userDetailsService(userDetailsService)
                 .sessionManagement(c -> c

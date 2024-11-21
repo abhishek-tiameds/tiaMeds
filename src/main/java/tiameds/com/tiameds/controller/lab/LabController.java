@@ -13,6 +13,7 @@ import tiameds.com.tiameds.entity.User;
 import tiameds.com.tiameds.repository.LabRepository;
 import tiameds.com.tiameds.services.lab.UserLabService;
 import tiameds.com.tiameds.utils.ApiResponse;
+import tiameds.com.tiameds.utils.ApiResponseHelper;
 import tiameds.com.tiameds.utils.UserAuthService;
 
 import java.util.List;
@@ -37,7 +38,7 @@ public class LabController {
 
     // create a new lab
     @PostMapping("/add-lab")
-    public ResponseEntity<ApiResponse<LabResponseDTO>> addLab(
+    public ResponseEntity<ApiResponse<Object>> addLab(
             @RequestBody LabRequestDTO labRequestDTO,
             @RequestHeader("Authorization") String token) {
 
@@ -85,7 +86,7 @@ public class LabController {
                 userResponseDTO
         );
         ApiResponse<LabResponseDTO> response = new ApiResponse<>("success", "Lab added successfully", labResponseDTO);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return ApiResponseHelper.successResponse("Lab added successfully", labResponseDTO);
     }
 
     // get all labs created by user
