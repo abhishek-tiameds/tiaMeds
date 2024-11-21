@@ -45,7 +45,6 @@ public class HealthPackage {
             joinColumns = @JoinColumn(name = "package_id"),
             inverseJoinColumns = @JoinColumn(name = "test_id")
     )
-//    @JsonBackReference(value = "package-tests")
     @JsonManagedReference(value = "package-tests")
     private Set<Test> tests = new HashSet<>();
 

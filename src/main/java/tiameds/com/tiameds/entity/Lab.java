@@ -11,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -107,15 +108,16 @@ public class Lab {
     private Set<Doctors> doctors = new HashSet<>();
 
 
-    public void addDoctor(Doctors doctor) {
-        this.doctors.add(doctor);
-        doctor.getLabs().add(this);
-    }
+    //insurance
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "lab_insurance",
+            joinColumns = @JoinColumn(name = "lab_id"),
+            inverseJoinColumns = @JoinColumn(name = "insurance_id")
+    )
+    @JsonManagedReference
+    private Set<InsuranceEntity> insurance = new HashSet<>();
 
 
-    public void removeDoctor(Doctors doctor) {
-        this.doctors.remove(doctor);
-        doctor.getLabs().remove(this);
-    }
 }
 
