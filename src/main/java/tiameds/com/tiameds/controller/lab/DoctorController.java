@@ -26,13 +26,11 @@ public class DoctorController {
             @PathVariable("labId") Long labId,
             @RequestBody DoctorDTO doctorDTO,
             @RequestHeader("Authorization") String token) {
-
         try {
             // Authenticate user
             if (userAuthService.authenticateUser(token).isEmpty()) {
                 return ApiResponseHelper.errorResponse("User not found", HttpStatus.UNAUTHORIZED);
             }
-
             // Delegate to the service layer
             doctorService.addDoctorToLab(labId, doctorDTO);
 

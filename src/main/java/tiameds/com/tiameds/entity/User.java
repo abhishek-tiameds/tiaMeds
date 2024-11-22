@@ -87,13 +87,12 @@ public class User {
     @JsonManagedReference
     private Set<ModuleEntity> modules = new HashSet<>();
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", referencedColumnName = "user_id")
     private User createdBy;
 
-
-    @ManyToMany(mappedBy = "members", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(mappedBy = "members",
+            fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonBackReference
     private Set<Lab> labs = new HashSet<>();
 

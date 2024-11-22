@@ -31,7 +31,7 @@ public class ModuleEntity {
 
 
     @ManyToMany(mappedBy = "modules",
-            fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+            fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonIgnore
     private Set<User> users = new HashSet<>();
 

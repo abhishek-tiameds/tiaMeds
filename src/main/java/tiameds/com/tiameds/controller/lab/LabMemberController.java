@@ -344,6 +344,8 @@ public class LabMemberController {
             return ApiResponseHelper.errorResponse("You are not authorized to delete this user", HttpStatus.UNAUTHORIZED);
         }
 
+        //check your are the creator of the user
+
         // 1st remove members from lab
         // 2nd delete user
 
@@ -355,7 +357,6 @@ public class LabMemberController {
                 labRepository.save(lab);
             }
         }
-
         // Delete the user
         userService.deleteUser(userToDelete.getId());
 
@@ -449,7 +450,7 @@ public class LabMemberController {
     }
 
 
-    //get user by id
+    //get user by id of
     @GetMapping("/get-user/{userId}")
     public ResponseEntity<?> getUser(
             @PathVariable Long userId,

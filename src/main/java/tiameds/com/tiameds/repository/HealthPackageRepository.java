@@ -3,6 +3,7 @@ package tiameds.com.tiameds.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import tiameds.com.tiameds.entity.HealthPackage;
+import tiameds.com.tiameds.entity.Lab;
 
 import java.util.List;
 
@@ -14,4 +15,5 @@ public interface HealthPackageRepository extends JpaRepository<HealthPackage, Lo
     boolean existsByPackageName(String packageName);
 
 
+    List<HealthPackage> findAllByLabs(Lab lab);
 }

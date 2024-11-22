@@ -133,47 +133,7 @@ public class TestController {
     }
 
 
-    // 3. Remove a test from a lab
-    @DeleteMapping("/{labId}/remove/{testId}")
-    @Transactional
-    public ResponseEntity<?> removeTest(
-            @PathVariable Long labId,
-            @PathVariable Long testId,
-            @RequestHeader("Authorization") String token) {
-        try {
-            // Authenticate the user using the provided token
-            User currentUser = userAuthService.authenticateUser(token)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
-            // Check if the lab exists in the repository
-            Lab lab = labRepository.findById(labId)
-                    .orElseThrow(() -> new RuntimeException("Lab not found"));
-
-            // Verify if the current user is associated with the lab
-            if (!currentUser.getLabs().contains(lab)) {
-                return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
-            }
-
-            // Check if the test exists in the repository
-            Test test = testRepository.findById(testId)
-                    .orElseThrow(() -> new RuntimeException("Test not found"));
-
-            // Remove the test from the lab and maintain the bidirectional relationship
-            lab.removeTest(test);
-
-            // Persist the updated Lab entity
-            labRepository.save(lab);
-
-            return ResponseEntity.ok(ApiResponseHelper.successResponse("Test removed successfully", null).getBody());
-
-        } catch (Exception e) {
-            // Handle unexpected exceptions and provide meaningful error messages
-            return ApiResponseHelper.errorResponse("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-
-    // 4. Update a test in a lab
+    // 4. Update a test in a lab by ID only if test id and lab id are matching
     @PutMapping("/{labId}/update/{testId}")
     public ResponseEntity<?> updateTest(
             @PathVariable Long labId,
@@ -198,6 +158,11 @@ public class TestController {
             Test test = testRepository.findById(testId)
                     .orElseThrow(() -> new RuntimeException("Test not found"));
 
+            // Check if the test belongs to the lab
+            if (!lab.getTests().contains(test)) {
+                return ApiResponseHelper.errorResponse("Test does not belong to this lab", HttpStatus.BAD_REQUEST);
+            }
+
             // Update the test entity with the new data
             test.setCategory(testDTO.getCategory());
             test.setName(testDTO.getName());
@@ -206,7 +171,17 @@ public class TestController {
             // Persist the updated Test entity
             testRepository.save(test);
 
-            return ResponseEntity.ok(ApiResponseHelper.successResponse("Test updated successfully", null).getBody());
+            // Optionally, map the updated Test back to a DTO to include generated data like ID
+            TestDTO updatedTestDTO = new TestDTO(
+                    test.getId(),
+                    test.getCategory(),
+                    test.getName(),
+                    test.getPrice(),
+                    test.getCreatedAt(),
+                    test.getUpdatedAt()
+            );
+
+            return ResponseEntity.ok(ApiResponseHelper.successResponse("Test updated successfully", updatedTestDTO).getBody());
 
         } catch (Exception e) {
             // Handle unexpected exceptions and provide meaningful error messages
@@ -215,9 +190,10 @@ public class TestController {
     }
 
 
-    // 5 get the test by id
+
+    // 5 get test by id only if test id and lab id are matching
     @GetMapping("/{labId}/test/{testId}")
-    public ResponseEntity<?> getTestById(
+    public ResponseEntity<?> getTest(
             @PathVariable Long labId,
             @PathVariable Long testId,
             @RequestHeader("Authorization") String token) {
@@ -239,7 +215,12 @@ public class TestController {
             Test test = testRepository.findById(testId)
                     .orElseThrow(() -> new RuntimeException("Test not found"));
 
-            // Map the test entity to a DTO
+            // Check if the test belongs to the lab
+            if (!lab.getTests().contains(test)) {
+                return ApiResponseHelper.errorResponse("Test does not belong to this lab", HttpStatus.BAD_REQUEST);
+            }
+
+            // Map the test to a DTO
             TestDTO testDTO = new TestDTO(
                     test.getId(),
                     test.getCategory(),
@@ -255,6 +236,56 @@ public class TestController {
             // Handle unexpected exceptions and provide meaningful error messages
             return ApiResponseHelper.errorResponse("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
     }
+
+
+    // 3. delete a test from a lab by ID only if test id and lab id are matching
+    @DeleteMapping("/{labId}/remove/{testId}")
+    @Transactional
+    public ResponseEntity<?> removeTest(
+            @PathVariable Long labId,
+            @PathVariable Long testId,
+            @RequestHeader("Authorization") String token) {
+        try {
+            // Authenticate the user using the provided token
+            User currentUser = userAuthService.authenticateUser(token)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Check if the lab exists in the repository
+            Lab lab = labRepository.findById(labId)
+                    .orElseThrow(() -> new RuntimeException("Lab not found"));
+
+            // Verify if the current user is associated with the lab
+            if (!currentUser.getLabs().contains(lab)) {
+                return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
+            }
+
+            // Check if the test exists in the repository
+            Test test = testRepository.findById(testId)
+                    .orElseThrow(() -> new RuntimeException("Test not found"));
+
+            // Check if the test belongs to the lab
+            if (!lab.getTests().contains(test)) {
+                return ApiResponseHelper.errorResponse("Test does not belong to this lab", HttpStatus.BAD_REQUEST);
+            }
+
+            // Remove the test from the lab and maintain the bidirectional relationship
+            lab.removeTest(test);
+
+            //delete the test
+            testRepository.deleteById(testId);
+
+            // Persist the updated Lab entity
+            labRepository.save(lab);
+
+            return ResponseEntity.ok(ApiResponseHelper.successResponse("Test removed successfully", null).getBody());
+
+        } catch (Exception e) {
+            // Handle unexpected exceptions and provide meaningful error messages
+            return ApiResponseHelper.errorResponse("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
 }

@@ -39,7 +39,7 @@ public class HealthPackage {
     @JsonBackReference(value = "package-labs")
     private Set<Lab> labs = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "package_tests",
             joinColumns = @JoinColumn(name = "package_id"),

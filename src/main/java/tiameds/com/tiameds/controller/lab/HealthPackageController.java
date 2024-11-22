@@ -18,6 +18,7 @@ import tiameds.com.tiameds.utils.UserAuthService;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/admin/lab")
@@ -39,84 +40,73 @@ public class HealthPackageController {
     }
 
 
+    //get all packages of a respective lab by their lab id  and only members of the lab can access this
     @GetMapping("{labId}/packages")
     public ResponseEntity<?> getHealthPackages(
             @PathVariable("labId") Long labId,
-            @RequestHeader("Authorization") String token
-    ) {
+            @RequestHeader("Authorization") String token){
+
         // Authenticate the user
         User currentUser = userAuthService.authenticateUser(token)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Fetch the lab and check if it exists
-        Lab lab = labRepository.findById(labId)
-                .orElseThrow(() -> new RuntimeException("Lab not found"));
+        Optional<Lab> lab = labRepository.findById(labId);
+        if (lab.isEmpty()) {
+            return ApiResponseHelper.errorResponse("Lab not found", HttpStatus.NOT_FOUND);
+        }
 
-        // Verify if the current user is associated with the lab
-        if (!currentUser.getLabs().contains(lab)) {
+        // Verify if the current user member of the lab or not
+        if (!currentUser.getLabs().contains(lab.get())) {
             return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
         }
 
-        // Fetch the health packages associated with the lab, including tests
-        var packages = healthPackageRepository.findByLabs_Id(labId);
+        // Fetch the health packages of the lab
+        List<HealthPackage> healthPackages = healthPackageRepository.findAllByLabs(lab.get());
 
-        if (packages.isEmpty()) {
-            return ApiResponseHelper.errorResponse("No health packages found for this lab", HttpStatus.NOT_FOUND);
-        }
-
-
-        // Return the success response with the fetched packages
+        // Return the success response with the fetched health packages
         return ApiResponseHelper.successResponse(
-                "Packages fetched successfully",
-                packages
+                "Health packages fetched successfully",
+                healthPackages
         );
     }
 
 
-    //create package
+
+    //create package only with those test ids which are associated with the lab id
     @PostMapping("{labId}/package")
     public ResponseEntity<?> createHealthPackage(
             @PathVariable("labId") Long labId,
             @RequestBody HealthPackageRequest packageRequest, // Assuming a DTO is used to accept the data
-            @RequestHeader("Authorization") String token
-    ) {
+            @RequestHeader("Authorization") String token){
+
         // Authenticate the user
         User currentUser = userAuthService.authenticateUser(token)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Fetch the lab and check if it exists
-        Lab lab = labRepository.findById(labId)
-                .orElseThrow(() -> new RuntimeException("Lab not found"));
+        Optional<Lab> lab = labRepository.findById(labId);
+        if (lab.isEmpty()) {
+            return ApiResponseHelper.errorResponse("Lab not found", HttpStatus.NOT_FOUND);
+        }
 
         // Verify if the current user is associated with the lab
-        if (!currentUser.getLabs().contains(lab)) {
+        if (!currentUser.getLabs().contains(lab.get())) {
             return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
         }
 
-        // Fetch the health tests based on the provided test IDs
-        List<Test> tests = testRepository.findAllById(packageRequest.getTestIds());  // Fetching tests by their IDs
-
-        // Check if all test IDs exist in the database
+       // check test id belongs to the lab or not
+        List<Test> tests = testRepository.findAllById(packageRequest.getTestIds());
         if (tests.size() != packageRequest.getTestIds().size()) {
             return ApiResponseHelper.errorResponse("One or more test IDs do not exist", HttpStatus.BAD_REQUEST);
         }
 
-
         // Create a new health package
         HealthPackage healthPackage = new HealthPackage();
-
-        //check the lab have already package with same name
-        Lab lab1 = labRepository.findById(labId).get();
-        if (lab1.getHealthPackages().stream().anyMatch(healthPackage1 -> healthPackage1.getPackageName().equals(packageRequest.getPackageName()))) {
-            return ApiResponseHelper.errorResponse("Package with the same name already exists", HttpStatus.BAD_REQUEST);
-        }
-
         healthPackage.setPackageName(packageRequest.getPackageName());
         healthPackage.setPrice(packageRequest.getPrice());
         healthPackage.setTests(new HashSet<>(tests));  // Convert List to Set before adding tests
-
-        // Associate the health package with the lab
-        lab.getHealthPackages().add(healthPackage);
+        healthPackage.getLabs().add(lab.get());
 
         // Save the health package to the database
         healthPackageRepository.save(healthPackage);

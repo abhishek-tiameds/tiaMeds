@@ -11,7 +11,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -43,6 +42,9 @@ public class Lab {
     @Column(nullable = false)
     private String description;
 
+    @Column(nullable = false)
+    private Boolean isActive;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -56,7 +58,7 @@ public class Lab {
     private User createdBy;
 
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "lab_members",
             joinColumns = @JoinColumn(name = "lab_id"),
@@ -66,7 +68,7 @@ public class Lab {
     private Set<User> members = new HashSet<>();
 
     //test
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "lab_tests",
             joinColumns = @JoinColumn(name = "lab_id"),
@@ -98,7 +100,7 @@ public class Lab {
     }
 
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "lab_doctors",
             joinColumns = @JoinColumn(name = "lab_id"),
@@ -109,7 +111,7 @@ public class Lab {
 
 
     //insurance
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "lab_insurance",
             joinColumns = @JoinColumn(name = "lab_id"),

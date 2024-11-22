@@ -64,6 +64,7 @@ public class LabController {
         lab.setCity(labRequestDTO.getCity());
         lab.setState(labRequestDTO.getState());
         lab.setDescription(labRequestDTO.getDescription());
+        lab.setIsActive(true);
         lab.setCreatedBy(currentUser);
         labRepository.save(lab);
 
@@ -121,6 +122,7 @@ public class LabController {
                 lab.getCity(),
                 lab.getState(),
                 lab.getDescription(),
+                lab.getIsActive() ? "Active" : "Inactive",
                 currentUser.getFirstName() + " " + currentUser.getLastName()
         )).toList();
 
@@ -208,7 +210,6 @@ public class LabController {
         lab.setState(labRequestDTO.getState());
         lab.setDescription(labRequestDTO.getDescription());
         labRepository.save(lab);
-
         // Return success response
         ApiResponse<String> successResponse = new ApiResponse<>("success", "Lab updated successfully", null);
         return ResponseEntity.status(HttpStatus.OK).body(successResponse);

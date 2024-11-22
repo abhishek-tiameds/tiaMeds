@@ -82,7 +82,7 @@ public class Doctors {
     @Column(nullable = false)
     private String country;
 
-    @ManyToMany(mappedBy = "doctors", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "doctors", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonBackReference
     private Set<Lab> labs = new HashSet<>();
 
@@ -92,6 +92,5 @@ public class Doctors {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-
 
 }

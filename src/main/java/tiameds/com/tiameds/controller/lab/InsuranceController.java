@@ -31,7 +31,10 @@ public class InsuranceController {
 
     // Add insurance
     @PostMapping("{labId}")
-    public ResponseEntity<?> addInsurance(@PathVariable("labId") Long labId, @RequestBody InsuranceDTO insuranceDTO, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> addInsurance(
+            @PathVariable("labId") Long labId,
+            @RequestBody InsuranceDTO insuranceDTO,
+            @RequestHeader("Authorization") String token) {
 
         try {
             // Authenticate the user using the provided token
@@ -54,9 +57,11 @@ public class InsuranceController {
         }
     }
 
-    // get all insurance of a particular lab
+    // get all insurance of a particular lab where labid and insuranceid are matched
     @GetMapping("{labId}")
-    public ResponseEntity<?> getAllInsurance(@PathVariable("labId") Long labId, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> getAllInsurance(
+            @PathVariable("labId") Long labId,
+            @RequestHeader("Authorization") String token) {
         try {
             // Authenticate the user using the provided token
             User currentUser = userAuthService.authenticateUser(token).orElseThrow(() -> new RuntimeException("User not found"));
@@ -77,11 +82,89 @@ public class InsuranceController {
         }
     }
 
+    // get insurance by id where labid and insuranceid are matched means insurance is associated with that lab only
+    @GetMapping("{labId}/insurance/{insuranceId}")
+    public ResponseEntity<?> getInsuranceById(
+            @PathVariable("labId") Long labId,
+            @PathVariable("insuranceId") Long insuranceId,
+            @RequestHeader("Authorization") String token) {
+        try {
+            // Authenticate the user using the provided token
+            User currentUser = userAuthService.authenticateUser(token).orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Check if the lab exists in the repository
+            Lab lab = labRepository.findById(labId).orElseThrow(() -> new RuntimeException("Lab not found"));
+
+            // Verify if the current user is associated with the lab
+            if (!currentUser.getLabs().contains(lab)) {
+                return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
+            }
+
+            // Delegate to the service layer
+            return ApiResponseHelper.successResponse("Insurance retrieved successfully", insuranceServices.getInsuranceById(labId, insuranceId));
+
+        } catch (Exception e) {
+            return ApiResponseHelper.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    // update insurance by id where labid and insuranceid are matched means insurance is associated with that lab only
+    @PutMapping("{labId}/insurance/{insuranceId}")
+    public ResponseEntity<?> updateInsurance(
+            @PathVariable("labId") Long labId,
+            @PathVariable("insuranceId") Long insuranceId,
+            @RequestBody InsuranceDTO insuranceDTO,
+            @RequestHeader("Authorization") String token) {
+        try {
+            // Authenticate the user using the provided token
+            User currentUser = userAuthService.authenticateUser(token).orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Check if the lab exists in the repository
+            Lab lab = labRepository.findById(labId).orElseThrow(() -> new RuntimeException("Lab not found"));
+
+            // Verify if the current user is associated with the lab
+            if (!currentUser.getLabs().contains(lab)) {
+                return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
+            }
+
+            // Delegate to the service layer
+            insuranceServices.updateInsurance(labId, insuranceId, insuranceDTO);
+
+            return ApiResponseHelper.successResponse("Insurance updated successfully", insuranceDTO);
+
+        } catch (Exception e) {
+            return ApiResponseHelper.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
 
 
+    // delete insurance by id where labid and insuranceid are matched means insurance is associated with that lab only
+    @DeleteMapping("{labId}/insurance/{insuranceId}")
+    public ResponseEntity<?> deleteInsurance(
+            @PathVariable("labId") Long labId,
+            @PathVariable("insuranceId") Long insuranceId,
+            @RequestHeader("Authorization") String token) {
+        try {
+            // Authenticate the user using the provided token
+            User currentUser = userAuthService.authenticateUser(token).orElseThrow(() -> new RuntimeException("User not found"));
 
+            // Check if the lab exists in the repository
+            Lab lab = labRepository.findById(labId).orElseThrow(() -> new RuntimeException("Lab not found"));
 
+            // Verify if the current user is associated with the lab
+            if (!currentUser.getLabs().contains(lab)) {
+                return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
+            }
 
+            // Delegate to the service layer
+            insuranceServices.deleteInsurance(labId, insuranceId);
+
+            return ApiResponseHelper.successResponse("Insurance deleted successfully", null);
+
+        } catch (Exception e) {
+            return ApiResponseHelper.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
 
 
 }

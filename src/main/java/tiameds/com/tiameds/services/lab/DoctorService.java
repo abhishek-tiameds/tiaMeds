@@ -31,7 +31,6 @@ public class DoctorService {
         // Retrieve the lab and authenticate the user
         Lab lab = labRepository.findById(labId)
                 .orElseThrow(() -> new RuntimeException("Lab not found"));
-
         // Verify if the doctor already exists in the lab
         List<Doctors> existingDoctors = lab.getDoctors().stream()
                 .filter(doctor -> doctor.getEmail().equals(doctorDTO.getEmail()))
@@ -40,7 +39,6 @@ public class DoctorService {
         if (!existingDoctors.isEmpty()) {
             throw new RuntimeException("Doctor already exists in this lab");
         }
-
         // Create a new doctor and add to lab
         Doctors doctor = new Doctors();
         doctor.setName(doctorDTO.getName());
@@ -57,7 +55,6 @@ public class DoctorService {
         doctor.getLabs().add(lab);
 
         doctorRepository.save(doctor);
-
         // Add the doctor to the lab
         lab.getDoctors().add(doctor);
         labRepository.save(lab);

@@ -57,7 +57,7 @@ public class InsuranceEntity {
     @UpdateTimestamp
     private String updatedAt;  // Optional - Date of last update
 
-    @ManyToMany(mappedBy = "insurance", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "insurance",cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JsonBackReference
     private Set<Lab> labs = new HashSet<>();
 

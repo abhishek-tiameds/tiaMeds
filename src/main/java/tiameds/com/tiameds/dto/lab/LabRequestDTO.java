@@ -12,5 +12,6 @@ public class LabRequestDTO {
     private String address;
     private String city;
     private String state;
+    private Boolean isActive;
     private String description;
 }
