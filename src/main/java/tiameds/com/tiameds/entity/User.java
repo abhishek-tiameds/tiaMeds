@@ -96,4 +96,7 @@ public class User {
     @JsonBackReference
     private Set<Lab> labs = new HashSet<>();
 
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
 }

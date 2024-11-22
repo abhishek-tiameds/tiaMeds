@@ -121,5 +121,8 @@ public class Lab {
     private Set<InsuranceEntity> insurance = new HashSet<>();
 
 
+    public String getCreatedByName() {
+        return this.createdBy.getFullName();
+    }
 }
 

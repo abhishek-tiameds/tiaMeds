@@ -13,7 +13,7 @@ public class LabListDTO {
     private String address;
     private String city;
     private String state;
-    private String isActive;
+    private Boolean isActive;
     private String description;
     private String createdByName;
 }

@@ -115,16 +115,18 @@ public class LabController {
         }
 
         // Map labs to LabListDTO
-        List<LabListDTO> labListDTOs = labs.stream().map(lab -> new LabListDTO(
-                lab.getId(),
-                lab.getName(),
-                lab.getAddress(),
-                lab.getCity(),
-                lab.getState(),
-                lab.getDescription(),
-                lab.getIsActive() ? "Active" : "Inactive",
-                currentUser.getFirstName() + " " + currentUser.getLastName()
-        )).toList();
+        List<LabListDTO> labListDTOs = labs.stream()
+                .map(lab -> new LabListDTO(
+                        lab.getId(),
+                        lab.getName(),
+                        lab.getAddress(),
+                        lab.getCity(),
+                        lab.getState(),
+                        lab.getIsActive(),
+                        lab.getDescription(),
+                        lab.getCreatedBy().getUsername()
+                ))
+                .toList();
 
         // Return the list of LabListDTOs
         ApiResponse<List<LabListDTO>> successResponse = new ApiResponse<>("success", "Labs found", labListDTOs);
