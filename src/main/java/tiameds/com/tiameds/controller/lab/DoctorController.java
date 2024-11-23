@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import tiameds.com.tiameds.dto.lab.DoctorDTO;
 import tiameds.com.tiameds.services.lab.DoctorService;
 import tiameds.com.tiameds.utils.ApiResponseHelper;
+import tiameds.com.tiameds.utils.LabAccessableFilter;
 import tiameds.com.tiameds.utils.UserAuthService;
 
 @RestController
@@ -14,10 +15,12 @@ public class DoctorController {
 
     private final DoctorService doctorService;
     private final UserAuthService userAuthService;
+    private final LabAccessableFilter labAccessableFilter;
 
-    public DoctorController(DoctorService doctorService, UserAuthService userAuthService) {
+    public DoctorController(DoctorService doctorService, UserAuthService userAuthService, LabAccessableFilter labAccessableFilter) {
         this.doctorService = doctorService;
         this.userAuthService = userAuthService;
+        this.labAccessableFilter = labAccessableFilter;
     }
 
     // create doctor or add doctor to lab
@@ -30,6 +33,12 @@ public class DoctorController {
             // Authenticate user
             if (userAuthService.authenticateUser(token).isEmpty()) {
                 return ApiResponseHelper.errorResponse("User not found", HttpStatus.UNAUTHORIZED);
+            }
+
+            // Check if the lab is active
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
             }
             // Delegate to the service layer
             doctorService.addDoctorToLab(labId, doctorDTO);
@@ -56,6 +65,12 @@ public class DoctorController {
                 return ApiResponseHelper.errorResponse("User not found", HttpStatus.UNAUTHORIZED);
             }
 
+            // Check if the lab is active
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
+
             // Delegate to the service layer
             doctorService.updateDoctor(labId, doctorId, doctorDTO);
 
@@ -65,7 +80,6 @@ public class DoctorController {
             return ApiResponseHelper.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
-
 
 
     // delete doctor
@@ -79,6 +93,12 @@ public class DoctorController {
             // Authenticate user
             if (userAuthService.authenticateUser(token).isEmpty()) {
                 return ApiResponseHelper.errorResponse("User not found", HttpStatus.UNAUTHORIZED);
+            }
+
+            // Check if the lab is active
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
             }
 
             // Delegate to the service layer
@@ -103,6 +123,12 @@ public class DoctorController {
                 return ApiResponseHelper.errorResponse("User not found", HttpStatus.UNAUTHORIZED);
             }
 
+            // Check if the lab is active
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
+
             // Delegate to the service layer
             return ApiResponseHelper.successResponse("Doctors retrieved successfully", doctorService.getAllDoctors(labId));
 
@@ -122,6 +148,12 @@ public class DoctorController {
             // Authenticate user
             if (userAuthService.authenticateUser(token).isEmpty()) {
                 return ApiResponseHelper.errorResponse("User not found", HttpStatus.UNAUTHORIZED);
+            }
+
+            // Check if the lab is active
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
             }
 
             // Delegate to the service layer

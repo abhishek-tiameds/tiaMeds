@@ -14,6 +14,7 @@ import tiameds.com.tiameds.repository.LabRepository;
 import tiameds.com.tiameds.services.lab.UserLabService;
 import tiameds.com.tiameds.utils.ApiResponse;
 import tiameds.com.tiameds.utils.ApiResponseHelper;
+import tiameds.com.tiameds.utils.LabAccessableFilter;
 import tiameds.com.tiameds.utils.UserAuthService;
 
 import java.util.List;
@@ -28,12 +29,14 @@ public class LabController {
     private final UserLabService userService;
     private final LabRepository labRepository;
     private final UserAuthService userAuthService;
+    private final LabAccessableFilter labAccessableFilter;
 
 
-    public LabController(UserLabService userService, LabRepository labRepository, UserAuthService userAuthService) {
+    public LabController(UserLabService userService, LabRepository labRepository, UserAuthService userAuthService, LabAccessableFilter labAccessableFilter) {
         this.userService = userService;
         this.labRepository = labRepository;
         this.userAuthService = userAuthService;
+        this.labAccessableFilter = labAccessableFilter;
     }
 
     // create a new lab

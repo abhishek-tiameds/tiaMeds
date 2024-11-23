@@ -10,6 +10,7 @@ import tiameds.com.tiameds.entity.User;
 import tiameds.com.tiameds.repository.LabRepository;
 import tiameds.com.tiameds.services.lab.InsuranceServices;
 import tiameds.com.tiameds.utils.ApiResponseHelper;
+import tiameds.com.tiameds.utils.LabAccessableFilter;
 import tiameds.com.tiameds.utils.UserAuthService;
 
 @RestController
@@ -20,12 +21,14 @@ public class InsuranceController {
     private final InsuranceServices insuranceServices;
     private final UserAuthService userAuthService;
     private final LabRepository labRepository;
+    private final LabAccessableFilter labAccessableFilter;
 
 
-    public InsuranceController(InsuranceServices insuranceServices, UserAuthService userAuthService, LabRepository labRepository) {
+    public InsuranceController(InsuranceServices insuranceServices, UserAuthService userAuthService, LabRepository labRepository, LabAccessableFilter labAccessableFilter) {
         this.insuranceServices = insuranceServices;
         this.userAuthService = userAuthService;
         this.labRepository = labRepository;
+        this.labAccessableFilter = labAccessableFilter;
     }
 
 
@@ -42,6 +45,12 @@ public class InsuranceController {
 
             // Check if the lab exists in the repository
             Lab lab = labRepository.findById(labId).orElseThrow(() -> new RuntimeException("Lab not found"));
+
+            // Check if the lab is active
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
 
             // Verify if the current user is associated with the lab
             if (!currentUser.getLabs().contains(lab)) {
@@ -69,6 +78,12 @@ public class InsuranceController {
             // Check if the lab exists in the repository
             Lab lab = labRepository.findById(labId).orElseThrow(() -> new RuntimeException("Lab not found"));
 
+            // Check if the lab is active
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
+
             // Verify if the current user is associated with the lab
             if (!currentUser.getLabs().contains(lab)) {
                 return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
@@ -95,6 +110,12 @@ public class InsuranceController {
             // Check if the lab exists in the repository
             Lab lab = labRepository.findById(labId).orElseThrow(() -> new RuntimeException("Lab not found"));
 
+            // Check if the lab is active
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
+
             // Verify if the current user is associated with the lab
             if (!currentUser.getLabs().contains(lab)) {
                 return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
@@ -107,6 +128,8 @@ public class InsuranceController {
             return ApiResponseHelper.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
+
 
     // update insurance by id where labid and insuranceid are matched means insurance is associated with that lab only
     @PutMapping("{labId}/insurance/{insuranceId}")
@@ -121,6 +144,12 @@ public class InsuranceController {
 
             // Check if the lab exists in the repository
             Lab lab = labRepository.findById(labId).orElseThrow(() -> new RuntimeException("Lab not found"));
+
+            // Check if the lab is active
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
 
             // Verify if the current user is associated with the lab
             if (!currentUser.getLabs().contains(lab)) {
@@ -144,12 +173,19 @@ public class InsuranceController {
             @PathVariable("labId") Long labId,
             @PathVariable("insuranceId") Long insuranceId,
             @RequestHeader("Authorization") String token) {
+
         try {
             // Authenticate the user using the provided token
             User currentUser = userAuthService.authenticateUser(token).orElseThrow(() -> new RuntimeException("User not found"));
 
             // Check if the lab exists in the repository
             Lab lab = labRepository.findById(labId).orElseThrow(() -> new RuntimeException("Lab not found"));
+
+            // Check if the lab is active
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
 
             // Verify if the current user is associated with the lab
             if (!currentUser.getLabs().contains(lab)) {

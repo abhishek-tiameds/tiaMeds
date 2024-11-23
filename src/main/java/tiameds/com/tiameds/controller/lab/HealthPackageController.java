@@ -3,7 +3,6 @@ package tiameds.com.tiameds.controller.lab;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import tiameds.com.tiameds.dto.lab.HealthPackageRequest;
 import tiameds.com.tiameds.entity.HealthPackage;
@@ -14,6 +13,7 @@ import tiameds.com.tiameds.repository.HealthPackageRepository;
 import tiameds.com.tiameds.repository.LabRepository;
 import tiameds.com.tiameds.repository.TestRepository;
 import tiameds.com.tiameds.utils.ApiResponseHelper;
+import tiameds.com.tiameds.utils.LabAccessableFilter;
 import tiameds.com.tiameds.utils.UserAuthService;
 
 import java.util.HashSet;
@@ -29,14 +29,16 @@ public class HealthPackageController {
     private final TestRepository testRepository;
     private final UserAuthService userAuthService;
     private final HealthPackageRepository healthPackageRepository;
+    private final LabAccessableFilter labAccessableFilter;
 
 
     //default constructor
-    public HealthPackageController(LabRepository labRepository, TestRepository testRepository, UserAuthService userAuthService, HealthPackageRepository healthPackageRepository) {
+    public HealthPackageController(LabRepository labRepository, TestRepository testRepository, UserAuthService userAuthService, HealthPackageRepository healthPackageRepository, LabAccessableFilter labAccessableFilter) {
         this.labRepository = labRepository;
         this.testRepository = testRepository;
         this.userAuthService = userAuthService;
         this.healthPackageRepository = healthPackageRepository;
+        this.labAccessableFilter = labAccessableFilter;
     }
 
 
@@ -50,10 +52,18 @@ public class HealthPackageController {
         User currentUser = userAuthService.authenticateUser(token)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+
+
         // Fetch the lab and check if it exists
         Optional<Lab> lab = labRepository.findById(labId);
         if (lab.isEmpty()) {
             return ApiResponseHelper.errorResponse("Lab not found", HttpStatus.NOT_FOUND);
+        }
+
+        // Check if the lab is active
+        boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+        if (isAccessible == false) {
+            return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
         }
 
         // Verify if the current user member of the lab or not
@@ -88,6 +98,12 @@ public class HealthPackageController {
         Optional<Lab> lab = labRepository.findById(labId);
         if (lab.isEmpty()) {
             return ApiResponseHelper.errorResponse("Lab not found", HttpStatus.NOT_FOUND);
+        }
+
+        // Check if the lab is active
+        boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+        if (isAccessible == false) {
+            return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
         }
 
         // Verify if the current user is associated with the lab
@@ -134,6 +150,13 @@ public class HealthPackageController {
         Lab lab = labRepository.findById(labId)
                 .orElseThrow(() -> new RuntimeException("Lab not found"));
 
+
+        // Check if the lab is active
+        boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+        if (isAccessible == false) {
+            return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+        }
+
         // Verify if the current user is associated with the lab
         if (!currentUser.getLabs().contains(lab)) {
             return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
@@ -177,6 +200,13 @@ public class HealthPackageController {
         // Fetch the lab and check if it exists
         Lab lab = labRepository.findById(labId)
                 .orElseThrow(() -> new RuntimeException("Lab not found"));
+
+
+        // Check if the lab is active
+        boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+        if (isAccessible == false) {
+            return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+        }
 
         // Verify if the current user is associated with the lab
         if (!currentUser.getLabs().contains(lab)) {
@@ -237,6 +267,12 @@ public class HealthPackageController {
         // Fetch the lab and check if it exists
         Lab lab = labRepository.findById(labId)
                 .orElseThrow(() -> new RuntimeException("Lab not found"));
+
+        // Check if the lab is active
+        boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+        if (isAccessible == false) {
+            return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+        }
 
         // Verify if the current user is associated with the lab
         if (!currentUser.getLabs().contains(lab)) {

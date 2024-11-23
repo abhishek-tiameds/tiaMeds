@@ -17,6 +17,7 @@ import tiameds.com.tiameds.repository.ModuleRepository;
 import tiameds.com.tiameds.services.auth.UserService;
 import tiameds.com.tiameds.services.lab.UserLabService;
 import tiameds.com.tiameds.utils.ApiResponseHelper;
+import tiameds.com.tiameds.utils.LabAccessableFilter;
 import tiameds.com.tiameds.utils.UserAuthService;
 
 import java.util.HashSet;
@@ -36,6 +37,7 @@ public class LabMemberController {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private ModuleRepository moduleRepository;
+    private LabAccessableFilter labAccessableFilter;
 
     @Autowired
     public LabMemberController(
@@ -43,7 +45,8 @@ public class LabMemberController {
             UserAuthService userAuthService,
             LabRepository labRepository, UserService userService,
             PasswordEncoder passwordEncoder,
-            ModuleRepository moduleRepository
+            ModuleRepository moduleRepository,
+            LabAccessableFilter labAccessableFilter
     ) {
         this.userLabService = userLabService;
         this.userAuthService = userAuthService;
@@ -51,6 +54,7 @@ public class LabMemberController {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.moduleRepository = moduleRepository;
+        this.labAccessableFilter = labAccessableFilter;
     }
 
     @PostMapping("/add-member/{labId}/member/{userId}")
@@ -68,6 +72,13 @@ public class LabMemberController {
         Lab lab = labRepository.findById(labId).orElse(null);
         if (lab == null)
             return ApiResponseHelper.errorResponse("Lab not found", HttpStatus.NOT_FOUND);
+
+
+        // Check if the lab is active
+        boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+        if (isAccessible == false) {
+            return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+        }
 
         // Check if the user exists (assuming you have a UserRepository or similar)
         User userToAdd = userLabService.getUserById(userId);
@@ -104,6 +115,12 @@ public class LabMemberController {
             return ApiResponseHelper.errorResponse("Lab not found", HttpStatus.NOT_FOUND);
         }
 
+        // Check if the lab is active
+        boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+        if (isAccessible == false) {
+            return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+        }
+
         if (!lab.getCreatedBy().equals(currentUser)) {
             return ApiResponseHelper.errorResponse("You are not authorized to view members of this lab", HttpStatus.UNAUTHORIZED);
         }
@@ -138,6 +155,13 @@ public class LabMemberController {
         if (lab == null)
             return ApiResponseHelper.errorResponse("Lab not found", HttpStatus.NOT_FOUND);
 
+
+        // Check if the lab is active
+        boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+        if (isAccessible == false) {
+            return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+        }
+
         User userToRemove = userLabService.getUserById(userId);
         if (userToRemove == null)
             return ApiResponseHelper.errorResponse("User to be removed not found", HttpStatus.NOT_FOUND);
@@ -170,6 +194,12 @@ public class LabMemberController {
         User currentUser = userAuthService.authenticateUser(token).orElse(null);
         if (currentUser == null)
             return ApiResponseHelper.errorResponse("User not found or unauthorized", HttpStatus.UNAUTHORIZED);
+
+        // Check if the lab is active
+        boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+        if (isAccessible == false) {
+            return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+        }
 
 
         // get the module of the user

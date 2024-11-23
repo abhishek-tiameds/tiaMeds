@@ -12,6 +12,7 @@ import tiameds.com.tiameds.entity.User;
 import tiameds.com.tiameds.repository.LabRepository;
 import tiameds.com.tiameds.repository.TestRepository;
 import tiameds.com.tiameds.utils.ApiResponseHelper;
+import tiameds.com.tiameds.utils.LabAccessableFilter;
 import tiameds.com.tiameds.utils.UserAuthService;
 
 import java.util.Comparator;
@@ -27,11 +28,13 @@ public class TestController {
     private final LabRepository labRepository;
     private final TestRepository testRepository;
     private final UserAuthService userAuthService;
+    private final LabAccessableFilter labAccessableFilter;
 
-    public TestController(LabRepository labRepository, TestRepository testRepository, UserAuthService userAuthService) {
+    public TestController(LabRepository labRepository, TestRepository testRepository, UserAuthService userAuthService, LabAccessableFilter labAccessableFilter) {
         this.labRepository = labRepository;
         this.testRepository = testRepository;
         this.userAuthService = userAuthService;
+        this.labAccessableFilter = labAccessableFilter;
     }
 
     @GetMapping("/{labId}/tests")
@@ -46,6 +49,12 @@ public class TestController {
             // Check if the lab exists in the repository
             Lab lab = labRepository.findById(labId)
                     .orElseThrow(() -> new RuntimeException("Lab not found"));
+
+            // Check if the lab is active
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
 
             // Verify if the current user is associated with the lab
             if (!currentUser.getLabs().contains(lab)) {
@@ -87,6 +96,14 @@ public class TestController {
             // Check if the lab exists in the repository
             Lab lab = labRepository.findById(labId)
                     .orElseThrow(() -> new RuntimeException("Lab not found"));
+
+
+            // Check if the lab is active
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
+
 
             // Verify if the current user is associated with the lab
             if (!currentUser.getLabs().contains(lab)) {
@@ -154,6 +171,13 @@ public class TestController {
                 return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
             }
 
+
+            // Check if the lab is active
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
+
             // Check if the test exists in the repository
             Test test = testRepository.findById(testId)
                     .orElseThrow(() -> new RuntimeException("Test not found"));
@@ -190,7 +214,6 @@ public class TestController {
     }
 
 
-
     // 5 get test by id only if test id and lab id are matching
     @GetMapping("/{labId}/test/{testId}")
     public ResponseEntity<?> getTest(
@@ -205,6 +228,13 @@ public class TestController {
             // Check if the lab exists in the repository
             Lab lab = labRepository.findById(labId)
                     .orElseThrow(() -> new RuntimeException("Lab not found"));
+
+
+            // Check if the lab is active
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
 
             // Verify if the current user is associated with the lab
             if (!currentUser.getLabs().contains(lab)) {
@@ -259,6 +289,12 @@ public class TestController {
             // Verify if the current user is associated with the lab
             if (!currentUser.getLabs().contains(lab)) {
                 return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
+            }
+
+            // Check if the lab is active
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
             }
 
             // Check if the test exists in the repository
