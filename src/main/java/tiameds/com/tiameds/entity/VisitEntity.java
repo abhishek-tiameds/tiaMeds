@@ -88,4 +88,6 @@ public class VisitEntity {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+
 }

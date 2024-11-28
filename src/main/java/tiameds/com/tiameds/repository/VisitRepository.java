@@ -7,4 +7,5 @@ import tiameds.com.tiameds.entity.VisitEntity;
 @Repository
 public interface VisitRepository extends JpaRepository<VisitEntity, Long> {
 
+    Object findAllByPatient_Labs_Id(Long labId);
 }

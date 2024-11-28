@@ -12,6 +12,7 @@ import tiameds.com.tiameds.utils.ApiResponseHelper;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -177,19 +178,19 @@ public class PatientService {
     //get patient by id of the lab
     public Object getPatientById(Long patientId, Long labId) {
 
-        //check lab exist or not and patient exist or not
+        // Get the lab by ID
         Optional<Lab> lab = labRepository.findById(labId);
         if (lab.isEmpty()) {
-            ApiResponseHelper.errorResponse("Lab not found", HttpStatus.NOT_FOUND);
+            return ApiResponseHelper.errorResponse("Lab not found", HttpStatus.NOT_FOUND);
         }
 
-        //check patient exist or not on the lab
+        // Check if the patient exists and belongs to the given lab
         Optional<PatientEntity> patient = patientRepository.findById(patientId);
-        if (patient.isEmpty() || !patient.get().getLabs().contains(lab)) {
-            ApiResponseHelper.errorResponse("Patient not found", HttpStatus.NOT_FOUND);
+        if (patient.isEmpty() || !patient.get().getLabs().contains(lab.get())) {
+            return ApiResponseHelper.errorResponse("Patient not found for the specified lab", HttpStatus.NOT_FOUND);
         }
 
-        // make response
+        // Make the response
         PatientEntity patientEntity = patient.get();
         PatientDTO patientDTO = new PatientDTO();
         patientDTO.setFirstName(patientEntity.getFirstName());
@@ -204,22 +205,25 @@ public class PatientService {
         patientDTO.setDateOfBirth(patientEntity.getDateOfBirth());
 
         return patientDTO;
-
     }
 
     public boolean existsById(Long patientId) {
         return patientRepository.existsById(patientId);
     }
 
-    public void updatePatient(Long patientId, PatientDTO patientDTO) {
-        //check patient exist or not
-        Optional<PatientEntity> patient = patientRepository.findById(patientId);
-        if (patient.isEmpty()) {
-            ApiResponseHelper.errorResponse("Patient not found", HttpStatus.NOT_FOUND);
-        }
 
-        //update patient
-        PatientEntity patientEntity = patient.get();
+    public void updatePatient(Long patientId, Long labId, PatientDTO patientDTO) {
+        // Check if the lab exists
+        Lab lab = labRepository.findById(labId)
+                .orElseThrow(() -> new RuntimeException("Lab not found"));
+
+        // Check if the patient exists and belongs to the lab
+        PatientEntity patientEntity = patientRepository.findById(patientId)
+                .filter(patient -> patient.getLabs().stream()
+                        .anyMatch(existingLab -> Objects.equals(existingLab.getId(), labId)))
+                .orElseThrow(() -> new RuntimeException("Patient not found for the specified lab"));
+
+        // Update the patient details from the DTO
         patientEntity.setFirstName(patientDTO.getFirstName());
         patientEntity.setLastName(patientDTO.getLastName());
         patientEntity.setEmail(patientDTO.getEmail());
@@ -230,26 +234,27 @@ public class PatientService {
         patientEntity.setZip(patientDTO.getZip());
         patientEntity.setBloodGroup(patientDTO.getBloodGroup());
         patientEntity.setDateOfBirth(patientDTO.getDateOfBirth());
-        patientRepository.save(patientEntity);
 
+        // Update lab relationship (optional, if labs can be updated)
+        patientEntity.getLabs().clear();
+        patientEntity.getLabs().add(lab);
+
+        // Save the updated patient
+        patientRepository.save(patientEntity);
     }
 
-
     public void deletePatient(Long patientId, Long labId) {
+        // Check if the lab exists
+        Lab lab = labRepository.findById(labId)
+                .orElseThrow(() -> new RuntimeException("Lab not found"));
 
-        //check lab exist or not and patient exist or not
-        Optional<Lab> lab = labRepository.findById(labId);
-        if (lab.isEmpty()) {
-            ApiResponseHelper.errorResponse("Lab not found", HttpStatus.NOT_FOUND);
-        }
+        // Check if the patient exists and belongs to the lab
+        PatientEntity patientEntity = patientRepository.findById(patientId)
+                .filter(patient -> patient.getLabs().stream()
+                        .anyMatch(existingLab -> Objects.equals(existingLab.getId(), labId)))
+                .orElseThrow(() -> new RuntimeException("Patient not found for the specified lab"));
 
-        //check patient exist or not on the lab
-        Optional<PatientEntity> patient = patientRepository.findById(patientId);
-        if (patient.isEmpty() || !patient.get().getLabs().contains(lab)) {
-            ApiResponseHelper.errorResponse("Patient not found", HttpStatus.NOT_FOUND);
-        }
-        //delete patient
-        patientRepository.deleteById(patientId);
-
+        // Delete the patient
+        patientRepository.delete(patientEntity);
     }
 }

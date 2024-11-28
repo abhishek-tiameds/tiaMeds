@@ -19,5 +19,4 @@ public interface InsuranceRepository extends JpaRepository<InsuranceEntity, Inte
             "WHERE i.name = :name AND l.id = :labId")
     boolean existsByNameAndLabId(@Param("name") String name, @Param("labId") Long labId);
 
-
 }

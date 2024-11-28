@@ -113,7 +113,7 @@ public class PatientController {
     }
 
 
-    //get patient by id of the lab
+    //get patient by id of the respective lab only
     @GetMapping("/{labId}/patient/{patientId}")
     public ResponseEntity<?> getPatientById(
             @PathVariable Long labId,
@@ -138,6 +138,9 @@ public class PatientController {
                 return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
             }
 
+            //check if the patient exists on the lab
+
+
             return ResponseEntity.ok(patientService.getPatientById(patientId, labId));
 
         } catch (Exception e) {
@@ -146,8 +149,7 @@ public class PatientController {
     }
 
 
-
-    //update patient
+    //update the patient details of the respective lab only
     @PutMapping("/{labId}/update-patient/{patientId}")
     public ResponseEntity<?> updatePatient(
             @PathVariable Long labId,
@@ -173,13 +175,8 @@ public class PatientController {
                 return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
             }
 
-            // Check if the patient exists
-            if (!patientService.existsById(patientId)) {
-                return ApiResponseHelper.errorResponse("Patient not found", HttpStatus.NOT_FOUND);
-            }
-
-            // Update patient
-            patientService.updatePatient(patientId, patientDTO);
+            //service to update the patient
+            patientService.updatePatient(patientId, labId, patientDTO);
 
             return ApiResponseHelper.successResponse("Patient updated successfully", HttpStatus.OK);
 
@@ -189,7 +186,7 @@ public class PatientController {
     }
 
 
-    //delete patient of the respective lab only
+    //delete the patient of the respective lab only
     @DeleteMapping("/{labId}/delete-patient/{patientId}")
     public ResponseEntity<?> deletePatient(
             @PathVariable Long labId,
@@ -214,12 +211,7 @@ public class PatientController {
                 return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
             }
 
-            // Check if the patient exists
-            if (!patientService.existsById(patientId)) {
-                return ApiResponseHelper.errorResponse("Patient not found", HttpStatus.NOT_FOUND);
-            }
-
-            // Delete patient
+            //service to delete the patient
             patientService.deletePatient(patientId, labId);
 
             return ApiResponseHelper.successResponse("Patient deleted successfully", HttpStatus.OK);
@@ -228,7 +220,6 @@ public class PatientController {
             return ApiResponseHelper.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
-
 
 
 }
