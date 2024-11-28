@@ -67,9 +67,12 @@ public class VisitController {
     }
 
 
-    // get List of all visits  of Lab
+    // get list of patient visits of respective lab
     @GetMapping("/{labId}/visits")
-    public ResponseEntity<?> getAllVisits(@PathVariable Long labId, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> getVisits(
+            @PathVariable Long labId,
+            @RequestHeader("Authorization") String token
+    ) {
         try {
             // Validate token format
             Optional<User> currentUser = userAuthService.authenticateUser(token);
@@ -77,23 +80,115 @@ public class VisitController {
                 return ApiResponseHelper.errorResponse("User not found", HttpStatus.UNAUTHORIZED);
             }
 
-            // Check if the lab exists
-            if (!labRepository.existsById(labId)) {
-                return ApiResponseHelper.errorResponse("Lab not found", HttpStatus.NOT_FOUND);
-            }
-
-            // Check if the user is a member of the lab
-            if (!currentUser.get().getLabs().contains(labRepository.findById(labId).get())) {
-                return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
-            }
-
-            // Get all visits of the lab
-            return ApiResponseHelper.successResponse(visitService.getAllVisits(labId), HttpStatus.OK);
+            // Get the list of visits
+            return ResponseEntity.ok(visitService.getVisits(labId, currentUser));
 
         } catch (Exception e) {
             return ApiResponseHelper.errorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
+    // update the visit details
+    @PutMapping("/{labId}/update-visit/{visitId}")
+    public ResponseEntity<?> updateVisit(
+            @PathVariable Long labId,
+            @PathVariable Long visitId,
+            @RequestBody VisitDTO visitDTO,
+            @RequestHeader("Authorization") String token
+    ) {
+        try {
+            // Validate token format
+            Optional<User> currentUser = userAuthService.authenticateUser(token);
+            if (currentUser.isEmpty()) {
+                return ApiResponseHelper.errorResponse("User not found", HttpStatus.UNAUTHORIZED);
+            }
+
+            // Update the visit
+            visitService.updateVisit(labId, visitId, visitDTO, currentUser);
+
+            return ApiResponseHelper.successResponse("Visit updated successfully", HttpStatus.OK);
+
+        } catch (Exception e) {
+            return ApiResponseHelper.errorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    // delete the visit
+    @DeleteMapping("/{labId}/delete-visit/{visitId}")
+    public ResponseEntity<?> deleteVisit(
+            @PathVariable Long labId,
+            @PathVariable Long visitId,
+            @RequestHeader("Authorization") String token
+    ) {
+        try {
+            // Validate token format
+            Optional<User> currentUser = userAuthService.authenticateUser(token);
+            if (currentUser.isEmpty()) {
+                return ApiResponseHelper.errorResponse("User not found", HttpStatus.UNAUTHORIZED);
+            }
+
+            // Delete the visit
+            visitService.deleteVisit(labId, visitId, currentUser);
+
+            return ApiResponseHelper.successResponse("Visit deleted successfully", HttpStatus.OK);
+
+        } catch (Exception e) {
+            return ApiResponseHelper.errorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    // get the visit details by visit ID
+    @GetMapping("/{labId}/visit/{visitId}")
+    public ResponseEntity<?> getVisit(
+            @PathVariable Long labId,
+            @PathVariable Long visitId,
+            @RequestHeader("Authorization") String token
+    ) {
+        try {
+            // Validate token format
+            Optional<User> currentUser = userAuthService.authenticateUser(token);
+            if (currentUser.isEmpty()) {
+                return ApiResponseHelper.errorResponse("User not found", HttpStatus.UNAUTHORIZED);
+            }
+
+            // Get the visit details
+            return ResponseEntity.ok(visitService.getVisit(labId, visitId, currentUser));
+
+        } catch (Exception e) {
+            return ApiResponseHelper.errorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    // get the visit details by patient ID
+    @GetMapping("/{labId}/patient/{patientId}/visit")
+    public ResponseEntity<?> getVisitByPatient(
+            @PathVariable Long labId,
+            @PathVariable Long patientId,
+            @RequestHeader("Authorization") String token
+    ) {
+        try {
+            // Validate token format
+            Optional<User> currentUser = userAuthService.authenticateUser(token);
+            if (currentUser.isEmpty()) {
+                return ApiResponseHelper.errorResponse("User not found", HttpStatus.UNAUTHORIZED);
+            }
+
+            // Get the visit details
+            return ResponseEntity.ok(visitService.getVisitByPatient(labId, patientId, currentUser));
+
+        } catch (Exception e) {
+            return ApiResponseHelper.errorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
+
+
 
 
 
