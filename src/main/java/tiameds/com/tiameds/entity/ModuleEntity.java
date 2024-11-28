@@ -35,6 +35,7 @@ public class ModuleEntity {
     @JsonIgnore
     private Set<User> users = new HashSet<>();
 
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

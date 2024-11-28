@@ -1,6 +1,7 @@
 package tiameds.com.tiameds.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -50,4 +51,11 @@ public class Test {
     @ManyToMany(mappedBy = "tests", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonBackReference(value = "package-tests")
     private Set<HealthPackage> healthPackages = new HashSet<>();
+
+
+    @ManyToMany(mappedBy = "tests", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JsonBackReference
+    private Set<VisitEntity> visits = new HashSet<>();
+
+
 }

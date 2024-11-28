@@ -5,6 +5,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import tiameds.com.tiameds.entity.InsuranceEntity;
+import tiameds.com.tiameds.entity.Test;
+
+import java.util.Collection;
+import java.util.List;
 
 
 @Repository

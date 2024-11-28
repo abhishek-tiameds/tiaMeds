@@ -124,5 +124,16 @@ public class Lab {
     public String getCreatedByName() {
         return this.createdBy.getFullName();
     }
+
+
+    //patient -> in one lab multiple patients can be registered
+    @ManyToMany(mappedBy = "labs", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JsonBackReference
+    private Set<PatientEntity> patients = new HashSet<>();
+
+    public String getInsurances() {
+        return this.insurance.stream().map(InsuranceEntity::getName).reduce((a, b) -> a + ", " + b).orElse("");
+    }
+
 }
 

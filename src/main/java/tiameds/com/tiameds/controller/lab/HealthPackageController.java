@@ -46,12 +46,11 @@ public class HealthPackageController {
     @GetMapping("{labId}/packages")
     public ResponseEntity<?> getHealthPackages(
             @PathVariable("labId") Long labId,
-            @RequestHeader("Authorization") String token){
+            @RequestHeader("Authorization") String token) {
 
         // Authenticate the user
         User currentUser = userAuthService.authenticateUser(token)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
 
 
         // Fetch the lab and check if it exists
@@ -82,36 +81,36 @@ public class HealthPackageController {
     }
 
 
-
-    //create package only with those test ids which are associated with the lab id
     @PostMapping("{labId}/package")
     public ResponseEntity<?> createHealthPackage(
             @PathVariable("labId") Long labId,
             @RequestBody HealthPackageRequest packageRequest, // Assuming a DTO is used to accept the data
-            @RequestHeader("Authorization") String token){
+            @RequestHeader("Authorization") String token) {
 
         // Authenticate the user
         User currentUser = userAuthService.authenticateUser(token)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Fetch the lab and check if it exists
-        Optional<Lab> lab = labRepository.findById(labId);
-        if (lab.isEmpty()) {
+        Optional<Lab> labOptional = labRepository.findById(labId);
+        if (labOptional.isEmpty()) {
             return ApiResponseHelper.errorResponse("Lab not found", HttpStatus.NOT_FOUND);
         }
 
+        Lab lab = labOptional.get();
+
         // Check if the lab is active
         boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
-        if (isAccessible == false) {
+        if (!isAccessible) {
             return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
         }
 
         // Verify if the current user is associated with the lab
-        if (!currentUser.getLabs().contains(lab.get())) {
+        if (!currentUser.getLabs().contains(lab)) {
             return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
         }
 
-       // check test id belongs to the lab or not
+        // Check if the test IDs belong to the lab or not
         List<Test> tests = testRepository.findAllById(packageRequest.getTestIds());
         if (tests.size() != packageRequest.getTestIds().size()) {
             return ApiResponseHelper.errorResponse("One or more test IDs do not exist", HttpStatus.BAD_REQUEST);
@@ -121,11 +120,15 @@ public class HealthPackageController {
         HealthPackage healthPackage = new HealthPackage();
         healthPackage.setPackageName(packageRequest.getPackageName());
         healthPackage.setPrice(packageRequest.getPrice());
-        healthPackage.setTests(new HashSet<>(tests));  // Convert List to Set before adding tests
-        healthPackage.getLabs().add(lab.get());
+        healthPackage.setTests(new HashSet<>(tests)); // Convert List to Set before adding tests
+
+        // Establish bidirectional relationship
+        healthPackage.getLabs().add(lab); // Add lab to healthPackage
+        lab.getHealthPackages().add(healthPackage); // Add healthPackage to lab
 
         // Save the health package to the database
         healthPackageRepository.save(healthPackage);
+        labRepository.save(lab); // Ensure the lab entity updates the relationship
 
         // Return the success response with the created health package
         return ApiResponseHelper.successResponse(
@@ -252,7 +255,6 @@ public class HealthPackageController {
     }
 
 
-
     //delete package by their respective id
     @DeleteMapping("{labId}/package/{packageId}")
     public ResponseEntity<?> deleteHealthPackage(
@@ -309,9 +311,6 @@ public class HealthPackageController {
                 null
         );
     }
-
-
-
 
 
 }

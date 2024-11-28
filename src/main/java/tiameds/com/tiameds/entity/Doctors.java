@@ -86,6 +86,11 @@ public class Doctors {
     @JsonBackReference
     private Set<Lab> labs = new HashSet<>();
 
+    @OneToMany(mappedBy = "doctor", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JsonBackReference
+    private Set<VisitEntity> visits = new HashSet<>();
+
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

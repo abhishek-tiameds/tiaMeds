@@ -35,7 +35,7 @@ public class HealthPackage {
     @Min(0)
     private double price;
 
-    @ManyToMany(mappedBy = "healthPackages", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "healthPackages", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonBackReference(value = "package-labs")
     private Set<Lab> labs = new HashSet<>();
 
@@ -54,4 +54,10 @@ public class HealthPackage {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @ManyToMany(mappedBy = "packages", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JsonBackReference
+    private Set<VisitEntity> visits = new HashSet<>();
+
+
 }
