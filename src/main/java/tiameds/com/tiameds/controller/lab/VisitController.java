@@ -6,12 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tiameds.com.tiameds.dto.lab.VisitDTO;
 import tiameds.com.tiameds.entity.User;
-import tiameds.com.tiameds.repository.LabRepository;
-import tiameds.com.tiameds.repository.PatientRepository;
 import tiameds.com.tiameds.services.lab.BillingService;
-import tiameds.com.tiameds.services.lab.PatientService;
 import tiameds.com.tiameds.services.lab.VisitService;
 import tiameds.com.tiameds.utils.ApiResponseHelper;
+import tiameds.com.tiameds.utils.LabAccessableFilter;
 import tiameds.com.tiameds.utils.UserAuthService;
 
 import java.util.Optional;
@@ -19,25 +17,19 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/lab")
-@Tag(name = "Visit Controller", description = "mannage the patient visit in the lab")
+@Tag(name = "Visit Controller", description = "mannage the patient visit in the repective controller")
 public class VisitController {
 
-    // Add your code here
 
-    private final PatientService patientService;
     private final VisitService visitService;
-    private final BillingService billingService;
     private final UserAuthService userAuthService;
-    private final LabRepository labRepository;
-    private PatientRepository patientRepository;
+    private final LabAccessableFilter labAccessableFilter;
 
 
-    public VisitController(PatientService patientService, VisitService visitService, BillingService billingService, UserAuthService userAuthService, LabRepository labRepository) {
-        this.patientService = patientService;
+    public VisitController(VisitService visitService, BillingService billingService, UserAuthService userAuthService, LabAccessableFilter labAccessableFilter) {
         this.visitService = visitService;
-        this.billingService = billingService;
         this.userAuthService = userAuthService;
-        this.labRepository = labRepository;
+        this.labAccessableFilter = labAccessableFilter;
     }
 
 
@@ -54,6 +46,11 @@ public class VisitController {
             Optional<User> currentUser = userAuthService.authenticateUser(token);
             if (currentUser.isEmpty()) {
                 return ApiResponseHelper.errorResponse("User not found", HttpStatus.UNAUTHORIZED);
+            }
+
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
             }
 
             // Create the visit (save to DB)
@@ -80,6 +77,11 @@ public class VisitController {
                 return ApiResponseHelper.errorResponse("User not found", HttpStatus.UNAUTHORIZED);
             }
 
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
+
             // Get the list of visits
             return ResponseEntity.ok(visitService.getVisits(labId, currentUser));
 
@@ -102,6 +104,11 @@ public class VisitController {
             Optional<User> currentUser = userAuthService.authenticateUser(token);
             if (currentUser.isEmpty()) {
                 return ApiResponseHelper.errorResponse("User not found", HttpStatus.UNAUTHORIZED);
+            }
+
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
             }
 
             // Update the visit
@@ -129,6 +136,11 @@ public class VisitController {
                 return ApiResponseHelper.errorResponse("User not found", HttpStatus.UNAUTHORIZED);
             }
 
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
+
             // Delete the visit
             visitService.deleteVisit(labId, visitId, currentUser);
 
@@ -154,6 +166,11 @@ public class VisitController {
                 return ApiResponseHelper.errorResponse("User not found", HttpStatus.UNAUTHORIZED);
             }
 
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
+
             // Get the visit details
             return ResponseEntity.ok(visitService.getVisit(labId, visitId, currentUser));
 
@@ -177,6 +194,11 @@ public class VisitController {
                 return ApiResponseHelper.errorResponse("User not found", HttpStatus.UNAUTHORIZED);
             }
 
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
+
             // Get the visit details
             return ResponseEntity.ok(visitService.getVisitByPatient(labId, patientId, currentUser));
 
@@ -184,12 +206,4 @@ public class VisitController {
             return ApiResponseHelper.errorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-
-
-
-
-
-
-
 }

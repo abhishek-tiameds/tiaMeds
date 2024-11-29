@@ -117,6 +117,7 @@ public class LabController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         }
 
+
         // Map labs to LabListDTO
         List<LabListDTO> labListDTOs = labs.stream()
                 .map(lab -> new LabListDTO(

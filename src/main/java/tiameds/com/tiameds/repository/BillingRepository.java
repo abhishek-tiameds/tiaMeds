@@ -5,4 +5,5 @@ import tiameds.com.tiameds.entity.BillingEntity;
 
 public interface BillingRepository extends JpaRepository<BillingEntity, Long> {
 
+
 }

@@ -8,10 +8,9 @@ import tiameds.com.tiameds.dto.lab.PatientDTO;
 import tiameds.com.tiameds.entity.Lab;
 import tiameds.com.tiameds.entity.User;
 import tiameds.com.tiameds.repository.LabRepository;
-import tiameds.com.tiameds.services.lab.BillingService;
 import tiameds.com.tiameds.services.lab.PatientService;
-import tiameds.com.tiameds.services.lab.VisitService;
 import tiameds.com.tiameds.utils.ApiResponseHelper;
+import tiameds.com.tiameds.utils.LabAccessableFilter;
 import tiameds.com.tiameds.utils.UserAuthService;
 
 import java.util.Optional;
@@ -23,18 +22,16 @@ import java.util.Optional;
 public class PatientController {
 
     private final PatientService patientService;
-    private final VisitService visitService;
-    private final BillingService billingService;
     private final UserAuthService userAuthService;
     private final LabRepository labRepository;
+    private final LabAccessableFilter labAccessableFilter;
 
 
-    public PatientController(PatientService patientService, VisitService visitService, BillingService billingService, UserAuthService userAuthService, LabRepository labRepository) {
+    public PatientController(PatientService patientService, UserAuthService userAuthService, LabRepository labRepository, LabAccessableFilter labAccessableFilter) {
         this.patientService = patientService;
-        this.visitService = visitService;
-        this.billingService = billingService;
         this.userAuthService = userAuthService;
         this.labRepository = labRepository;
+        this.labAccessableFilter = labAccessableFilter;
     }
 
     // Add your code here
@@ -57,6 +54,11 @@ public class PatientController {
             Optional<Lab> labOptional = labRepository.findById(labId);
             if (labOptional.isEmpty()) {
                 return ApiResponseHelper.errorResponse("Lab not found", HttpStatus.NOT_FOUND);
+            }
+
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
             }
 
             // Check if the user is a member of the lab
@@ -100,6 +102,11 @@ public class PatientController {
                 return ApiResponseHelper.errorResponse("Lab not found", HttpStatus.NOT_FOUND);
             }
 
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
+
             // Check if the user is a member of the lab
             if (!currentUser.get().getLabs().contains(labOptional.get())) {
                 return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
@@ -131,6 +138,11 @@ public class PatientController {
             Optional<Lab> labOptional = labRepository.findById(labId);
             if (labOptional.isEmpty()) {
                 return ApiResponseHelper.errorResponse("Lab not found", HttpStatus.NOT_FOUND);
+            }
+
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
             }
 
             // Check if the user is a member of the lab
@@ -170,6 +182,11 @@ public class PatientController {
                 return ApiResponseHelper.errorResponse("Lab not found", HttpStatus.NOT_FOUND);
             }
 
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
+
             // Check if the user is a member of the lab
             if (!currentUser.get().getLabs().contains(labOptional.get())) {
                 return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
@@ -204,6 +221,11 @@ public class PatientController {
             Optional<Lab> labOptional = labRepository.findById(labId);
             if (labOptional.isEmpty()) {
                 return ApiResponseHelper.errorResponse("Lab not found", HttpStatus.NOT_FOUND);
+            }
+
+            boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+            if (isAccessible == false) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
             }
 
             // Check if the user is a member of the lab

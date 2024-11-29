@@ -189,6 +189,7 @@ public class VisitService {
 
     @Transactional
     public void updateVisit(Long labId, Long visitId, VisitDTO visitDTO, Optional<User> currentUser) {
+
         // Check if the lab exists
         Optional<Lab> labOptional = labRepository.findById(labId);
         if (labOptional.isEmpty()) {
@@ -200,20 +201,11 @@ public class VisitService {
             ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
         }
 
-        // Check if the visit exists
-        Optional<VisitEntity> visitOptional = visitRepository.findById(visitId);
-        if (visitOptional.isEmpty()) {
-            ApiResponseHelper.errorResponse("Visit not found", HttpStatus.NOT_FOUND);
-        }
+        VisitEntity visit = visitRepository.findById(visitId)
+                .filter(visitEntity -> visitEntity.getPatient().getLabs().contains(labOptional.get()))
+                .orElseThrow(() -> new IllegalArgumentException("Visit not found or does not belong to the lab"));
 
-        VisitEntity visit = visitOptional.get();
 
-        // Check if the visit belongs to the lab
-        if (!visit.getPatient().getLabs().contains(labOptional.get())) {
-            ApiResponseHelper.errorResponse("Visit not belong to the lab", HttpStatus.BAD_REQUEST);
-        }
-
-        // Check if the doctor exists
         Optional<Doctors> doctorOptional = doctorRepository.findById(visitDTO.getDoctorId());
         if (doctorOptional.isEmpty()) {
             ApiResponseHelper.errorResponse("Doctor not found", HttpStatus.NOT_FOUND);
@@ -257,14 +249,14 @@ public class VisitService {
         billingEntity.setNetAmount(visitDTO.getBilling().getNetAmount());
 
         billingRepository.save(billingEntity);
-
         visit.setBilling(billingEntity);
-
         // Save the visit
         visitRepository.save(visit);
 
     }
 
+
+    // delete the visit
     public void deleteVisit(Long labId, Long visitId, Optional<User> currentUser) {
         // Check if the lab exists
         Optional<Lab> labOptional = labRepository.findById(labId);
@@ -283,17 +275,15 @@ public class VisitService {
             ApiResponseHelper.errorResponse("Visit not found", HttpStatus.NOT_FOUND);
         }
 
-        VisitEntity visit = visitOptional.get();
+        VisitEntity visit = visitRepository.findById(visitId)
+                .filter(visitEntity -> visitEntity.getPatient().getLabs().contains(labOptional.get()))
+                .orElseThrow(() -> new IllegalArgumentException("Visit not found or does not belong to the lab"));
 
-        // Check if the visit belongs to the lab
-        if (!visit.getPatient().getLabs().contains(labOptional.get())) {
-            ApiResponseHelper.errorResponse("Visit not belong to the lab", HttpStatus.BAD_REQUEST);
-        }
-
-        // Delete the visit
         visitRepository.delete(visit);
     }
 
+
+    // get the visit details
     public Object getVisit(Long labId, Long visitId, Optional<User> currentUser) {
         // Check if the lab exists
         Optional<Lab> labOptional = labRepository.findById(labId);
@@ -312,12 +302,10 @@ public class VisitService {
             return ApiResponseHelper.errorResponse("Visit not found", HttpStatus.NOT_FOUND);
         }
 
-        VisitEntity visit = visitOptional.get();
+        VisitEntity visit = visitRepository.findById(visitId)
+                .filter(visitEntity -> visitEntity.getPatient().getLabs().contains(labOptional.get()))
+                .orElseThrow(() -> new IllegalArgumentException("Visit not found or does not belong to the lab"));
 
-        // Check if the visit belongs to the lab
-        if (!visit.getPatient().getLabs().contains(labOptional.get())) {
-            return ApiResponseHelper.errorResponse("Visit not belong to the lab", HttpStatus.BAD_REQUEST);
-        }
 
         // Map visit to PatientDTO
         PatientDTO patientDTO = mapVisitToPatientDTO(visit);
@@ -343,6 +331,7 @@ public class VisitService {
         if (patientEntity.isEmpty()) {
             return ApiResponseHelper.errorResponse("Patient not belong to the lab", HttpStatus.BAD_REQUEST);
         }
+
 
         // Get the list of visits
         List<VisitEntity> visits = visitRepository.findAllByPatient(patientEntity.get());

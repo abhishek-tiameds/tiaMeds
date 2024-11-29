@@ -1,6 +1,8 @@
 package tiameds.com.tiameds.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import tiameds.com.tiameds.entity.Lab;
 import tiameds.com.tiameds.entity.PatientEntity;
@@ -16,4 +18,8 @@ public interface VisitRepository extends JpaRepository<VisitEntity, Long> {
     List<VisitEntity> findAllByPatient_Labs(Lab lab);
 
     List<VisitEntity> findAllByPatient(PatientEntity patientEntity);
+
+    @Query("SELECT v FROM VisitEntity v WHERE v.patient.patientId = :patientId")
+    List<VisitEntity> findByPatientId(@Param("patientId") Long patientId);
+
 }
