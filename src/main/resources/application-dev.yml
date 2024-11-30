@@ -27,6 +27,8 @@ spring:
       max-file-size: 10MB  # Maximum size for a single file
       max-request-size: 10MB  # Maximum total request size, should be >= max-file-size
 
+  jwt:
+    secret: "TaK+HaV^uvCHEFsEVfypW#7g9^k*Z8$V"
 
 springdoc:
   api-docs:
@@ -34,7 +36,6 @@ springdoc:
   swagger-ui:
     path: /doc  # Swagger UI path
 
-# Logging configuration
 logging:
   level:
     org.springframework: INFO  # General logging level
@@ -42,8 +43,3 @@ logging:
     com:
       fasterxml:
         jackson: DEBUG  # Enable detailed logging for Jackson (Deserialization issues)
-
-
-
-
-
