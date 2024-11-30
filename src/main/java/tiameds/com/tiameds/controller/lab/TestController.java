@@ -5,12 +5,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import tiameds.com.tiameds.dto.lab.TestDTO;
 import tiameds.com.tiameds.entity.Lab;
 import tiameds.com.tiameds.entity.Test;
 import tiameds.com.tiameds.entity.User;
 import tiameds.com.tiameds.repository.LabRepository;
 import tiameds.com.tiameds.repository.TestRepository;
+import tiameds.com.tiameds.services.lab.TestServices;
 import tiameds.com.tiameds.utils.ApiResponseHelper;
 import tiameds.com.tiameds.utils.LabAccessableFilter;
 import tiameds.com.tiameds.utils.UserAuthService;
@@ -29,14 +31,18 @@ public class TestController {
     private final TestRepository testRepository;
     private final UserAuthService userAuthService;
     private final LabAccessableFilter labAccessableFilter;
+    private final TestServices testServices;
 
-    public TestController(LabRepository labRepository, TestRepository testRepository, UserAuthService userAuthService, LabAccessableFilter labAccessableFilter) {
+    public TestController(LabRepository labRepository, TestRepository testRepository, UserAuthService userAuthService, LabAccessableFilter labAccessableFilter, TestServices testServices) {
         this.labRepository = labRepository;
         this.testRepository = testRepository;
         this.userAuthService = userAuthService;
         this.labAccessableFilter = labAccessableFilter;
+        this.testServices = testServices;
     }
 
+
+    // 1. Get all tests in a lab
     @GetMapping("/{labId}/tests")
     public ResponseEntity<?> getAllTests(
             @PathVariable Long labId,
@@ -100,7 +106,7 @@ public class TestController {
 
             // Check if the lab is active
             boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
-            if (isAccessible == false) {
+            if (!isAccessible) {
                 return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
             }
 
@@ -150,7 +156,7 @@ public class TestController {
     }
 
 
-    // 4. Update a test in a lab by ID only if test id and lab id are matching
+    // 3. Update a test in a lab by ID only if test id and lab id are matching
     @PutMapping("/{labId}/update/{testId}")
     public ResponseEntity<?> updateTest(
             @PathVariable Long labId,
@@ -214,7 +220,7 @@ public class TestController {
     }
 
 
-    // 5 get test by id only if test id and lab id are matching
+    // 4 get test by id only if test id and lab id are matching
     @GetMapping("/{labId}/test/{testId}")
     public ResponseEntity<?> getTest(
             @PathVariable Long labId,
@@ -270,7 +276,7 @@ public class TestController {
     }
 
 
-    // 3. delete a test from a lab by ID only if test id and lab id are matching
+    // 5. delete a test from a lab by ID only if test id and lab id are matching
     @DeleteMapping("/{labId}/remove/{testId}")
     @Transactional
     public ResponseEntity<?> removeTest(
@@ -324,4 +330,91 @@ public class TestController {
     }
 
 
+    //6 upload csv
+    @PostMapping("/test/{labId}/csv/upload")
+    public ResponseEntity<?> uploadCSV(
+            @PathVariable Long labId,
+            @RequestParam("file") MultipartFile file,
+            @RequestHeader("Authorization") String token) {
+        try {
+            // Authenticate the user
+            User currentUser = userAuthService.authenticateUser(token)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Verify lab existence and user association
+            Lab lab = labRepository.findById(labId)
+                    .orElseThrow(() -> new RuntimeException("Lab not found"));
+
+            if (!currentUser.getLabs().contains(lab)) {
+                return ApiResponseHelper.errorResponse("User is not authorized for this lab", HttpStatus.UNAUTHORIZED);
+            }
+
+            // Verify lab accessibility
+            if (!labAccessableFilter.isLabAccessible(labId)) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
+
+            // Validate file type
+            if (file.isEmpty() || !file.getContentType().equals("text/csv")) {
+                return ApiResponseHelper.errorResponse("Invalid file type. Only CSV files are allowed.", HttpStatus.BAD_REQUEST);
+            }
+
+            // Process the file and save tests
+            List<Test> tests = testServices.uploadCSV(file, lab);
+
+            // Convert saved tests to DTOs for response
+            List<TestDTO> testDTOs = tests.stream()
+                    .map(test -> new TestDTO(
+                            test.getId(),
+                            test.getCategory(),
+                            test.getName(),
+                            test.getPrice(),
+                            test.getCreatedAt(),
+                            test.getUpdatedAt()
+                    ))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(ApiResponseHelper.successResponse("Tests uploaded successfully", testDTOs));
+
+        } catch (RuntimeException e) {
+            return ApiResponseHelper.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return ApiResponseHelper.errorResponse("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
+    // 7 download csv file of respective lab tests only
+    @GetMapping("/{labId}/download")
+    public ResponseEntity<?> downloadCSV(
+            @PathVariable Long labId,
+            @RequestHeader("Authorization") String token) {
+        try {
+            // Authenticate the user
+            User currentUser = userAuthService.authenticateUser(token)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Verify lab existence and user association
+            Lab lab = labRepository.findById(labId)
+                    .orElseThrow(() -> new RuntimeException("Lab not found"));
+
+            if (!currentUser.getLabs().contains(lab)) {
+                return ApiResponseHelper.errorResponse("User is not authorized for this lab", HttpStatus.UNAUTHORIZED);
+            }
+
+            // Verify lab accessibility
+            if (!labAccessableFilter.isLabAccessible(labId)) {
+                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+            }
+
+            // Generate CSV file and return as attachment
+            return testServices.downloadCSV(lab);
+
+        } catch (RuntimeException e) {
+            return ApiResponseHelper.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return ApiResponseHelper.errorResponse("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

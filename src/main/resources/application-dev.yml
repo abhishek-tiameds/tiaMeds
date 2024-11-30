@@ -22,7 +22,12 @@ spring:
       name: user  # Default user (for basic auth, if used)
       password: password  # Default password
 
-# Swagger configuration
+  servlet:
+    multipart:
+      max-file-size: 10MB  # Maximum size for a single file
+      max-request-size: 10MB  # Maximum total request size, should be >= max-file-size
+
+
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -37,3 +42,8 @@ logging:
     com:
       fasterxml:
         jackson: DEBUG  # Enable detailed logging for Jackson (Deserialization issues)
+
+
+
+
+
