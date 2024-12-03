@@ -11,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import tiameds.com.tiameds.dto.auth.AuthResponse;
 import tiameds.com.tiameds.dto.auth.LoginRequest;
 import tiameds.com.tiameds.dto.auth.LoginResponse;
 import tiameds.com.tiameds.dto.auth.RegisterRequest;
@@ -20,6 +21,7 @@ import tiameds.com.tiameds.entity.User;
 import tiameds.com.tiameds.repository.ModuleRepository;
 import tiameds.com.tiameds.services.auth.UserDetailsServiceImpl;
 import tiameds.com.tiameds.services.auth.UserService;
+import tiameds.com.tiameds.utils.ApiResponseHelper;
 import tiameds.com.tiameds.utils.JwtUtil;
 import tiameds.com.tiameds.entity.Role;
 import java.util.*;
@@ -105,36 +107,41 @@ public class UserController {
         return ResponseEntity.ok("User registered successfully");
     }
 
+
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+        String token = null;
         try {
             // Authenticate the user
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect username or password");
+            // Return error response
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new AuthResponse(HttpStatus.BAD_REQUEST , "Incorrect username or password", null, null));
         }
 
         // Load user details
         final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUsername());
 
         // Generate JWT token
-        final String jwt = jwtUtils.generateToken(userDetails.getUsername());
+        token = jwtUtils.generateToken(userDetails.getUsername());
 
-        // Fetch user details from UserService to include roles
+        // Fetch user details
         Optional<User> userOptional = userService.findByUsername(loginRequest.getUsername());
         if (!userOptional.isPresent()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new AuthResponse(HttpStatus.BAD_REQUEST, "User not found", null, null));
         }
         User user = userOptional.get();
-        // Convert roles to a list of strings
+
+        // Convert roles to list of strings
         List<String> roles = user.getRoles().stream()
                 .map(Role::getName)
                 .collect(Collectors.toList());
 
-
-        //fetch modules
+        // Fetch modules
         Set<ModuleEntity> modules = user.getModules();
         List<ModuleDTO> moduleDTOList = new ArrayList<>();
         for (ModuleEntity module : modules) {
@@ -144,16 +151,13 @@ public class UserController {
             moduleDTOList.add(moduleDTO);
         }
 
-
-
-        // Create the response
+        // Create the LoginResponse object
         LoginResponse loginResponse = new LoginResponse();
-        loginResponse.setToken(jwt);
         loginResponse.setUsername(user.getUsername());
         loginResponse.setEmail(user.getEmail());
         loginResponse.setFirstName(user.getFirstName());
         loginResponse.setLastName(user.getLastName());
-        loginResponse.setRoles(roles); // Set roles in the response
+        loginResponse.setRoles(roles);
         loginResponse.setPhone(user.getPhone());
         loginResponse.setAddress(user.getAddress());
         loginResponse.setCity(user.getCity());
@@ -163,8 +167,11 @@ public class UserController {
         loginResponse.setVerified(user.isVerified());
         loginResponse.setEnabled(user.isEnabled());
         loginResponse.setModules(moduleDTOList);
-        return ResponseEntity.ok(loginResponse);
-    }
 
+        // Create and return the AuthResponse
+        return ResponseEntity.ok(new AuthResponse(
+                HttpStatus.OK,
+                "Login successful", token, loginResponse));
+    }
 }
 
