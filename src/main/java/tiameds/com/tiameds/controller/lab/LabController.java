@@ -18,11 +18,13 @@ import tiameds.com.tiameds.utils.LabAccessableFilter;
 import tiameds.com.tiameds.utils.UserAuthService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
 @RestController
 @RequestMapping("/lab/admin")
+@CrossOrigin(origins = "http://localhost:3000")
 @Tag(name = "Lab Admin", description = "Endpoints for Lab Admin")
 public class LabController {
 
@@ -41,7 +43,7 @@ public class LabController {
 
     // create a new lab
     @PostMapping("/add-lab")
-    public ResponseEntity<ApiResponse<Object>> addLab(
+    public ResponseEntity<Map<String, Object>> addLab(
             @RequestBody LabRequestDTO labRequestDTO,
             @RequestHeader("Authorization") String token) {
 
@@ -89,8 +91,10 @@ public class LabController {
                 lab.getDescription(),
                 userResponseDTO
         );
-        ApiResponse<LabResponseDTO> response = new ApiResponse<>("success", "Lab added successfully", labResponseDTO);
-        return ApiResponseHelper.successResponse("Lab added successfully", labResponseDTO);
+
+        // Return success response
+        return ApiResponseHelper.successResponseWithDataAndMessage("Lab created successfully", HttpStatus.OK, labResponseDTO);
+
     }
 
     // get all labs created by user
@@ -103,8 +107,7 @@ public class LabController {
 
         // If user is not found, return unauthorized response
         if (currentUserOptional.isEmpty()) {
-            ApiResponse<String> errorResponse = new ApiResponse<>("error", "User not found", null);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            return ApiResponseHelper.successResponseWithDataAndMessage("User not found", HttpStatus.UNAUTHORIZED, null);
         }
 
         User currentUser = currentUserOptional.get();
@@ -113,8 +116,7 @@ public class LabController {
 
         // If no labs are found, return a not found response
         if (labs.isEmpty()) {
-            ApiResponse<String> errorResponse = new ApiResponse<>("error", "No labs found for this user", null);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+            return ApiResponseHelper.successResponseWithDataAndMessage("No labs found", HttpStatus.OK, null);
         }
 
 
@@ -132,9 +134,8 @@ public class LabController {
                 ))
                 .toList();
 
-        // Return the list of LabListDTOs
-        ApiResponse<List<LabListDTO>> successResponse = new ApiResponse<>("success", "Labs found", labListDTOs);
-        return ResponseEntity.status(HttpStatus.OK).body(successResponse);
+        return ApiResponseHelper.successResponseWithDataAndMessage("Labs fetched successfully", HttpStatus.OK, labListDTOs);
+
     }
 
 
@@ -173,8 +174,7 @@ public class LabController {
         labRepository.delete(lab);
 
         // Return success response
-        ApiResponse<String> successResponse = new ApiResponse<>("success", "Lab deleted successfully", null);
-        return ResponseEntity.status(HttpStatus.OK).body(successResponse);
+        return ApiResponseHelper.successResponseWithDataAndMessage("Lab deleted successfully", HttpStatus.OK, null);
     }
 
     // update lab by their respective id
@@ -217,10 +217,10 @@ public class LabController {
         lab.setDescription(labRequestDTO.getDescription());
         labRepository.save(lab);
         // Return success response
-        ApiResponse<String> successResponse = new ApiResponse<>("success", "Lab updated successfully", null);
-        return ResponseEntity.status(HttpStatus.OK).body(successResponse);
+
+        return ApiResponseHelper.successResponseWithDataAndMessage("Lab updated successfully", HttpStatus.OK, lab);
     }
 
-
-
 }
+
+

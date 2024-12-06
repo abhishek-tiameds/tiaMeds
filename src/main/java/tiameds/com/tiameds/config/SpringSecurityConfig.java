@@ -3,6 +3,7 @@ package tiameds.com.tiameds.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -22,7 +23,6 @@ import tiameds.com.tiameds.services.auth.UserDetailsServiceImpl;
 @EnableWebSecurity
 public class SpringSecurityConfig {
 
-
     private final JwtFilter jwtFilter;
     private final UserDetailsServiceImpl userDetailsService;
 
@@ -41,28 +41,64 @@ public class SpringSecurityConfig {
     }
 
 
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        return http
+//                .csrf(AbstractHttpConfigurer::disable)
+//                .authorizeRequests(req -> req
+//
+//                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // CORS pre-flight requests
+//                        // Role-based authorization first
+//                        .requestMatchers("/admin/**").hasRole("ADMIN")
+//                        .requestMatchers("/lab/**").hasRole("ADMIN")
+//                        .requestMatchers("/lab-super-admin/**").hasRole("SUPERADMIN")
+//                        .requestMatchers("/error").permitAll()
+//                        // Allow login and registration paths to be accessed without authentication
+//                        .requestMatchers("/login/**", "/register/**").permitAll()
+//
+//                        // Allow Swagger and public resources to be accessed without authentication
+//                        .requestMatchers(
+//                                "/v3/api-docs/**",
+//                                "/doc/**",
+//                                "/swagger-ui/**",
+//                                "/swagger-ui.html",
+//                                "/public/**"
+//                        ).permitAll()
+//
+//                        // Catch-all for any other request, ensuring that they are authenticated
+//                        .anyRequest().authenticated()
+//                )
+//                .userDetailsService(userDetailsService)
+//                .sessionManagement(c -> c
+//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // Stateless (JWT) authentication
+//                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)  // JWT filter for authentication
+//                .build();
+//    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeRequests(
-                        req -> req
-                                .requestMatchers("/login/**", "/register/**").permitAll()
-                                .requestMatchers(
-                                        "/v3/api-docs/**",
-                                        "/doc/**",
-                                        "/swagger-ui/**",
-                                        "/swagger-ui.html", // Updated this line
-                                        "/public/**"
-                                ).permitAll()
-                                .requestMatchers("/admin/**").hasRole("ADMIN")
-                                .requestMatchers("/lab/**").hasRole("ADMIN")
-                                .requestMatchers("/api/v1/lab-super-admin/**").hasRole("SUPERADMIN")
-                                .anyRequest().authenticated()
-                ).userDetailsService(userDetailsService)
-                .sessionManagement(c -> c
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .csrf(csrf -> csrf.disable())  // Disable CSRF for stateless JWT authentication
+                .cors(cors -> cors.configurationSource(new CorsConfig().corsConfigurationSource()))// Enable CORS with a custom source
+                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // Permit CORS preflight requests
+                        .requestMatchers("/admin/**").hasRole("ADMIN")  // Restrict /admin/** to ADMIN role
+                        .requestMatchers("/lab/**").hasRole("ADMIN")    // Restrict /lab/** to ADMIN role
+                        .requestMatchers("/lab-super-admin/**").hasRole("SUPERADMIN") // SUPERADMIN-only endpoints
+                        .requestMatchers("/error").permitAll()          // Allow error endpoint without authentication
+                        .requestMatchers("/login/**", "/register/**").permitAll()  // Public login & registration
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/doc/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/public/**"
+                        ).permitAll()  // Allow Swagger and public resources
+                        .anyRequest().authenticated()  // All other requests must be authenticated
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // Stateless (JWT) sessions
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)  // Add JWT filter
                 .build();
     }
 

@@ -2,6 +2,10 @@ package tiameds.com.tiameds.utils;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import tiameds.com.tiameds.dto.lab.LabResponseDTO;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class ApiResponseHelper {
@@ -25,4 +29,25 @@ public class ApiResponseHelper {
         ApiResponse<T> response = new ApiResponse<>("error", message, data);
         return ResponseEntity.ok(response);
     }
+
+    public static <T> ResponseEntity<Map<String, Object>> successResponseWithDataAndMessage(String message, HttpStatus status, T data) {
+        // Create a Map to hold the response structure
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("message", message);
+        response.put("data", data);
+
+        return new ResponseEntity<>(response, status);
+    }
+
+    public static ResponseEntity<Map<String, Object>> errorResponseWithMessage(String message, HttpStatus status) {
+        // Create a Map to hold the response structure
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "error");
+        response.put("message", message);
+
+        return new ResponseEntity<>(response, status);
+    }
+
+
 }

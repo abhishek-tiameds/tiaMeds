@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import tiameds.com.tiameds.dto.auth.RegisterRequest;
+import tiameds.com.tiameds.dto.lab.LabListDTO;
 import tiameds.com.tiameds.dto.lab.UserInLabDTO;
 import tiameds.com.tiameds.entity.Lab;
 import tiameds.com.tiameds.entity.ModuleEntity;
@@ -510,6 +511,43 @@ public class LabMemberController {
 
         return ApiResponseHelper.successResponse("User retrieved successfully", user);
     }
+
+
+
+//    //get the list of lab of current user
+@GetMapping("get-user-labs")
+public ResponseEntity<?> getUserLabs(
+        @RequestHeader("Authorization") String token
+) {
+
+    // Check if the user is authenticated
+    User currentUser = userAuthService.authenticateUser(token).orElse(null);
+    if (currentUser == null)
+        return ApiResponseHelper.errorResponse("User not found or unauthorized", HttpStatus.UNAUTHORIZED);
+
+    Set<Lab> labs = labRepository.findLabsByUserId(currentUser.getId());
+
+    if (labs.isEmpty()) {
+        return ApiResponseHelper.successResponseWithDataAndMessage("No labs found", HttpStatus.OK, null);
+    }
+
+    List<LabListDTO> labListDTOs = labs.stream()
+            .map(lab -> new LabListDTO(
+                    lab.getId(),
+                    lab.getName(),
+                    lab.getAddress(),
+                    lab.getCity(),
+                    lab.getState(),
+                    lab.getIsActive(),
+                    lab.getDescription(),
+                    lab.getCreatedBy().getUsername()
+            ))
+            .toList();
+
+    return ApiResponseHelper.successResponseWithDataAndMessage("Labs fetched successfully", HttpStatus.OK, labListDTOs);
+
+}
+
 
 
 }

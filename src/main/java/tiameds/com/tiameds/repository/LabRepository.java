@@ -10,6 +10,7 @@ import tiameds.com.tiameds.entity.User;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Transactional
 @Repository
@@ -26,4 +27,9 @@ public interface LabRepository extends JpaRepository<Lab, Long> {
 
 
     Optional<Lab> findByMembers(User user);
+
+    @Query("SELECT l FROM Lab l JOIN l.members m WHERE m.id = :userId")
+    Set<Lab> findLabsByUserId(@Param("userId") Long userId);
+
+
 }

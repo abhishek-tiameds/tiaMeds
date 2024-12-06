@@ -17,6 +17,7 @@ spring:
   server:
     port: 8080  # Port on which the application runs
 
+
   security:
     user:
       name: user  # Default user (for basic auth, if used)
@@ -42,4 +43,11 @@ logging:
     org.springframework.security: DEBUG  # Detailed logging for Spring Security (optional)
     com:
       fasterxml:
-        jackson: DEBUG  # Enable detailed logging for Jackson (Deserialization issues)
+        jackson: DEBUG  # Enable detailed logging for Jackson
+
+
+
+server:
+  servlet:
+    context-path: /api/v1
+
