@@ -59,12 +59,12 @@ public class TestController {
             // Check if the lab is active
             boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
             if (isAccessible == false) {
-                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+                return ApiResponseHelper.successResponseWithDataAndMessage("Lab is not accessible", HttpStatus.UNAUTHORIZED, null);
             }
 
             // Verify if the current user is associated with the lab
             if (!currentUser.getLabs().contains(lab)) {
-                return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
+                return ApiResponseHelper.successResponseWithDataAndMessage("User is not a member of this lab", HttpStatus.UNAUTHORIZED, null);
             }
 
             // Retrieve, sort by ID in ascending order, and map all tests to DTOs
@@ -80,7 +80,7 @@ public class TestController {
                     ))
                     .collect(Collectors.toList());
 
-            return ResponseEntity.ok(ApiResponseHelper.successResponse("Tests retrieved successfully", testDTOs).getBody());
+            return ApiResponseHelper.successResponseWithDataAndMessage("Tests retrieved successfully", HttpStatus.OK, testDTOs);
 
         } catch (Exception e) {
             // Handle unexpected exceptions and provide meaningful error messages
@@ -107,13 +107,13 @@ public class TestController {
             // Check if the lab is active
             boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
             if (!isAccessible) {
-                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+                return ApiResponseHelper.successResponseWithDataAndMessage("Lab is not accessible", HttpStatus.UNAUTHORIZED, null);
             }
 
 
             // Verify if the current user is associated with the lab
             if (!currentUser.getLabs().contains(lab)) {
-                return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
+                return ApiResponseHelper.successResponseWithDataAndMessage("User is not a member of this lab", HttpStatus.UNAUTHORIZED, null);
             }
 
 
@@ -121,7 +121,7 @@ public class TestController {
             Set<Test> tests = lab.getTests();
             for (Test test : tests) {
                 if (test.getName().equals(testDTO.getName())) {
-                    return ApiResponseHelper.errorResponse("Test already exists in the lab", HttpStatus.BAD_REQUEST);
+                    return ApiResponseHelper.successResponseWithDataAndMessage("Test already exists in the lab", HttpStatus.BAD_REQUEST, null);
                 }
             }
 
@@ -147,11 +147,11 @@ public class TestController {
                     test.getUpdatedAt()
             );
 
-            return ResponseEntity.ok(ApiResponseHelper.successResponse("Test added successfully", savedTestDTO).getBody());
+            return ApiResponseHelper.successResponseWithDataAndMessage("Test added successfully", HttpStatus.CREATED, savedTestDTO);
 
         } catch (Exception e) {
             // Handle unexpected exceptions and provide meaningful error messages
-            return ApiResponseHelper.errorResponse("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ApiResponseHelper.successResponseWithDataAndMessage("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, null);
         }
     }
 
@@ -174,14 +174,14 @@ public class TestController {
 
             // Verify if the current user is associated with the lab
             if (!currentUser.getLabs().contains(lab)) {
-                return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
+                return ApiResponseHelper.successResponseWithDataAndMessage("User is not a member of this lab", HttpStatus.UNAUTHORIZED, null);
             }
 
 
             // Check if the lab is active
             boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
             if (isAccessible == false) {
-                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+                return ApiResponseHelper.successResponseWithDataAndMessage("Lab is not accessible", HttpStatus.UNAUTHORIZED, null);
             }
 
             // Check if the test exists in the repository
@@ -190,7 +190,7 @@ public class TestController {
 
             // Check if the test belongs to the lab
             if (!lab.getTests().contains(test)) {
-                return ApiResponseHelper.errorResponse("Test does not belong to this lab", HttpStatus.BAD_REQUEST);
+                return ApiResponseHelper.successResponseWithDataAndMessage("Test does not belong to this lab", HttpStatus.BAD_REQUEST, null);
             }
 
             // Update the test entity with the new data
@@ -211,11 +211,11 @@ public class TestController {
                     test.getUpdatedAt()
             );
 
-            return ResponseEntity.ok(ApiResponseHelper.successResponse("Test updated successfully", updatedTestDTO).getBody());
+            return ApiResponseHelper.successResponseWithDataAndMessage("Test updated successfully", HttpStatus.OK, updatedTestDTO);
 
         } catch (Exception e) {
             // Handle unexpected exceptions and provide meaningful error messages
-            return ApiResponseHelper.errorResponse("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ApiResponseHelper.successResponseWithDataAndMessage("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, null);
         }
     }
 
@@ -239,12 +239,12 @@ public class TestController {
             // Check if the lab is active
             boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
             if (isAccessible == false) {
-                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+                return ApiResponseHelper.successResponseWithDataAndMessage("Lab is not accessible", HttpStatus.UNAUTHORIZED, null);
             }
 
             // Verify if the current user is associated with the lab
             if (!currentUser.getLabs().contains(lab)) {
-                return ApiResponseHelper.errorResponse("User is not a member of this lab", HttpStatus.UNAUTHORIZED);
+                return ApiResponseHelper.successResponseWithDataAndMessage("User is not a member of this lab", HttpStatus.UNAUTHORIZED, null);
             }
 
             // Check if the test exists in the repository
@@ -253,7 +253,7 @@ public class TestController {
 
             // Check if the test belongs to the lab
             if (!lab.getTests().contains(test)) {
-                return ApiResponseHelper.errorResponse("Test does not belong to this lab", HttpStatus.BAD_REQUEST);
+                return ApiResponseHelper.successResponseWithDataAndMessage("Test does not belong to this lab", HttpStatus.BAD_REQUEST, null);
             }
 
             // Map the test to a DTO
@@ -266,11 +266,11 @@ public class TestController {
                     test.getUpdatedAt()
             );
 
-            return ResponseEntity.ok(ApiResponseHelper.successResponse("Test retrieved successfully", testDTO).getBody());
+            return ApiResponseHelper.successResponseWithDataAndMessage("Test retrieved successfully", HttpStatus.OK, testDTO);
 
         } catch (Exception e) {
             // Handle unexpected exceptions and provide meaningful error messages
-            return ApiResponseHelper.errorResponse("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ApiResponseHelper.successResponseWithDataAndMessage("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, null);
         }
 
     }
@@ -325,7 +325,7 @@ public class TestController {
 
         } catch (Exception e) {
             // Handle unexpected exceptions and provide meaningful error messages
-            return ApiResponseHelper.errorResponse("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ApiResponseHelper.successResponseWithDataAndMessage("An unexpected error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, null);
         }
     }
 
@@ -346,17 +346,17 @@ public class TestController {
                     .orElseThrow(() -> new RuntimeException("Lab not found"));
 
             if (!currentUser.getLabs().contains(lab)) {
-                return ApiResponseHelper.errorResponse("User is not authorized for this lab", HttpStatus.UNAUTHORIZED);
+                return ApiResponseHelper.successResponseWithDataAndMessage("User is not authorized for this lab", HttpStatus.UNAUTHORIZED, null);
             }
 
             // Verify lab accessibility
             if (!labAccessableFilter.isLabAccessible(labId)) {
-                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+                return ApiResponseHelper.successResponseWithDataAndMessage("Lab is not accessible", HttpStatus.UNAUTHORIZED, null);
             }
 
             // Validate file type
             if (file.isEmpty() || !file.getContentType().equals("text/csv")) {
-                return ApiResponseHelper.errorResponse("Invalid file type. Only CSV files are allowed.", HttpStatus.BAD_REQUEST);
+                return ApiResponseHelper.successResponseWithDataAndMessage("Please upload a CSV file", HttpStatus.BAD_REQUEST, null);
             }
 
             // Process the file and save tests
@@ -374,7 +374,7 @@ public class TestController {
                     ))
                     .collect(Collectors.toList());
 
-            return ResponseEntity.ok(ApiResponseHelper.successResponse("Tests uploaded successfully", testDTOs));
+            return ApiResponseHelper.successResponseWithDataAndMessage("Tests uploaded successfully", HttpStatus.CREATED, testDTOs);
 
         } catch (RuntimeException e) {
             return ApiResponseHelper.errorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -400,12 +400,12 @@ public class TestController {
                     .orElseThrow(() -> new RuntimeException("Lab not found"));
 
             if (!currentUser.getLabs().contains(lab)) {
-                return ApiResponseHelper.errorResponse("User is not authorized for this lab", HttpStatus.UNAUTHORIZED);
+                return ApiResponseHelper.successResponseWithDataAndMessage("User is not authorized for this lab", HttpStatus.UNAUTHORIZED, null);
             }
 
             // Verify lab accessibility
             if (!labAccessableFilter.isLabAccessible(labId)) {
-                return ApiResponseHelper.errorResponse("Lab is not accessible", HttpStatus.UNAUTHORIZED);
+                return ApiResponseHelper.successResponseWithDataAndMessage("Lab is not accessible", HttpStatus.UNAUTHORIZED, null);
             }
 
             // Generate CSV file and return as attachment

@@ -24,7 +24,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/lab/admin")
-@CrossOrigin(origins = "http://localhost:3000")
 @Tag(name = "Lab Admin", description = "Endpoints for Lab Admin")
 public class LabController {
 
@@ -32,70 +31,75 @@ public class LabController {
     private final LabRepository labRepository;
     private final UserAuthService userAuthService;
     private final LabAccessableFilter labAccessableFilter;
+    private UserLabService userLabService;
 
 
-    public LabController(UserLabService userService, LabRepository labRepository, UserAuthService userAuthService, LabAccessableFilter labAccessableFilter) {
+    public LabController(UserLabService userService, LabRepository labRepository, UserAuthService userAuthService, LabAccessableFilter labAccessableFilter, UserLabService userLabService) {
         this.userService = userService;
         this.labRepository = labRepository;
         this.userAuthService = userAuthService;
         this.labAccessableFilter = labAccessableFilter;
+        this.userLabService = userLabService;
     }
 
     // create a new lab
-    @PostMapping("/add-lab")
-    public ResponseEntity<Map<String, Object>> addLab(
-            @RequestBody LabRequestDTO labRequestDTO,
-            @RequestHeader("Authorization") String token) {
-
-        // Validate token format
-        Optional<User> currentUserOptional = userAuthService.authenticateUser(token);
-        if (currentUserOptional.isEmpty()) {
-            ApiResponse<String> response = new ApiResponse<>("error", "User not found", null);
-            return new ResponseEntity(response, HttpStatus.UNAUTHORIZED);
-        }
-
-        User currentUser = currentUserOptional.get();
-
-        // Check if the lab already exists
-        if (userService.existsLabByName(labRequestDTO.getName())) {
-            ApiResponse<String> response = new ApiResponse<>("error", "Lab already exists", null);
-            return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
-        }
-
-        // Create and save the new lab
-        Lab lab = new Lab();
-        lab.setName(labRequestDTO.getName());
-        lab.setAddress(labRequestDTO.getAddress());
-        lab.setCity(labRequestDTO.getCity());
-        lab.setState(labRequestDTO.getState());
-        lab.setDescription(labRequestDTO.getDescription());
-        lab.setIsActive(true);
-        lab.setCreatedBy(currentUser);
-        labRepository.save(lab);
-
-        // Create DTOs for response
-        UserResponseDTO userResponseDTO = new UserResponseDTO(
-                currentUser.getId(),
-                currentUser.getUsername(),
-                currentUser.getEmail(),
-                currentUser.getFirstName(),
-                currentUser.getLastName()
-        );
-
-        LabResponseDTO labResponseDTO = new LabResponseDTO(
-                lab.getId(),
-                lab.getName(),
-                lab.getAddress(),
-                lab.getCity(),
-                lab.getState(),
-                lab.getDescription(),
-                userResponseDTO
-        );
-
-        // Return success response
-        return ApiResponseHelper.successResponseWithDataAndMessage("Lab created successfully", HttpStatus.OK, labResponseDTO);
-
-    }
+//    @PostMapping("/add-lab")
+//    public ResponseEntity<Map<String, Object>> addLab(
+//            @RequestBody LabRequestDTO labRequestDTO,
+//            @RequestHeader("Authorization") String token) {
+//
+//        // Validate token format
+//        Optional<User> currentUserOptional = userAuthService.authenticateUser(token);
+//        if (currentUserOptional.isEmpty()) {
+//            ApiResponse<String> response = new ApiResponse<>("error", "User not found", null);
+//            return new ResponseEntity(response, HttpStatus.UNAUTHORIZED);
+//        }
+//
+//        User currentUser = currentUserOptional.get();
+//
+//        // Check if the lab already exists
+//        if (userService.existsLabByName(labRequestDTO.getName())) {
+//            ApiResponse<String> response = new ApiResponse<>("error", "Lab already exists", null);
+//            return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
+//        }
+//
+//        // Create and save the new lab
+//        Lab lab = new Lab();
+//        lab.setName(labRequestDTO.getName());
+//        lab.setAddress(labRequestDTO.getAddress());
+//        lab.setCity(labRequestDTO.getCity());
+//        lab.setState(labRequestDTO.getState());
+//        lab.setDescription(labRequestDTO.getDescription());
+//        lab.setIsActive(true);
+//        lab.setCreatedBy(currentUser);
+//        labRepository.save(lab);
+//
+//        // Create DTOs for response
+//        UserResponseDTO userResponseDTO = new UserResponseDTO(
+//                currentUser.getId(),
+//                currentUser.getUsername(),
+//                currentUser.getEmail(),
+//                currentUser.getFirstName(),
+//                currentUser.getLastName()
+//        );
+//
+//        LabResponseDTO labResponseDTO = new LabResponseDTO(
+//                lab.getId(),
+//                lab.getName(),
+//                lab.getAddress(),
+//                lab.getCity(),
+//                lab.getState(),
+//                lab.getDescription(),
+//                userResponseDTO
+//        );
+//
+//        //become a member of the lab
+//
+//
+//        // Return success response
+//        return ApiResponseHelper.successResponseWithDataAndMessage("Lab created successfully", HttpStatus.OK, labResponseDTO);
+//
+//    }
 
     // get all labs created by user
     @GetMapping("/get-labs")
@@ -220,6 +224,110 @@ public class LabController {
 
         return ApiResponseHelper.successResponseWithDataAndMessage("Lab updated successfully", HttpStatus.OK, lab);
     }
+
+
+
+    //
+    @PostMapping("/add-lab")
+    public ResponseEntity<Map<String, Object>> addLab(
+            @RequestBody LabRequestDTO labRequestDTO,
+            @RequestHeader("Authorization") String token) {
+
+        // Validate token format
+        Optional<User> currentUserOptional = userAuthService.authenticateUser(token);
+        if (currentUserOptional.isEmpty()) {
+            ApiResponse<String> response = new ApiResponse<>("error", "User not found", null);
+            return new ResponseEntity(response, HttpStatus.UNAUTHORIZED);
+        }
+
+        User currentUser = currentUserOptional.get();
+
+        // Check if the lab already exists
+        if (userService.existsLabByName(labRequestDTO.getName())) {
+            ApiResponse<String> response = new ApiResponse<>("error", "Lab already exists", null);
+            return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
+        }
+
+        // Create and save the new lab
+        Lab lab = new Lab();
+        lab.setName(labRequestDTO.getName());
+        lab.setAddress(labRequestDTO.getAddress());
+        lab.setCity(labRequestDTO.getCity());
+        lab.setState(labRequestDTO.getState());
+        lab.setDescription(labRequestDTO.getDescription());
+        lab.setIsActive(true);
+        lab.setCreatedBy(currentUser);
+        labRepository.save(lab);
+
+        // Create DTOs for response
+        UserResponseDTO userResponseDTO = new UserResponseDTO(
+                currentUser.getId(),
+                currentUser.getUsername(),
+                currentUser.getEmail(),
+                currentUser.getFirstName(),
+                currentUser.getLastName()
+        );
+
+        LabResponseDTO labResponseDTO = new LabResponseDTO(
+                lab.getId(),
+                lab.getName(),
+                lab.getAddress(),
+                lab.getCity(),
+                lab.getState(),
+                lab.getDescription(),
+                userResponseDTO
+        );
+
+        // Automatically add the current user as a member of the newly created lab
+        try {
+            addMemberToLab(lab.getId(), currentUser.getId(), token);  // Calling the logic to add the user as a member
+        } catch (Exception e) {
+            ApiResponse<String> response = new ApiResponse<>("error", "Failed to add user as member", null);
+            return new ResponseEntity(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        // Return success response
+        return ApiResponseHelper.successResponseWithDataAndMessage("Lab created successfully and user added as a member", HttpStatus.OK, labResponseDTO);
+    }
+
+    private void addMemberToLab(Long labId, Long userId, String token) {
+        // Check if the user is authenticated
+        User currentUser = userAuthService.authenticateUser(token).orElse(null);
+        if (currentUser == null) {
+            throw new IllegalStateException("User not found or unauthorized");
+        }
+
+        // Check if the lab exists
+        Lab lab = labRepository.findById(labId).orElse(null);
+        if (lab == null) {
+            throw new IllegalStateException("Lab not found");
+        }
+
+        // Check if the lab is active
+        boolean isAccessible = labAccessableFilter.isLabAccessible(labId);
+        if (!isAccessible) {
+            throw new IllegalStateException("Lab is not accessible");
+        }
+
+        // Check if the user exists (assuming you have a UserRepository or similar)
+        User userToAdd = userLabService.getUserById(userId);
+        if (userToAdd == null) {
+            throw new IllegalStateException("User to be added not found");
+        }
+
+        // Check creator of the lab
+        if (!lab.getCreatedBy().equals(currentUser)) {
+            throw new IllegalStateException("You are not authorized to add members to this lab");
+        }
+
+        // Add the user to the lab's members
+        if (lab.getMembers().contains(userToAdd)) {
+            throw new IllegalStateException("User is already a member of this lab");
+        }
+        lab.getMembers().add(userToAdd);
+        labRepository.save(lab);
+    }
+
 
 }
 
