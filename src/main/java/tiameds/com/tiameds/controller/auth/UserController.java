@@ -58,16 +58,16 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody RegisterRequest registerRequest) {
 
         // Check if the username is already taken
         if (userService.existsByUsername(registerRequest.getUsername())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Username is already taken");
+            return ApiResponseHelper.successResponseWithDataAndMessage("Username is already taken", HttpStatus.BAD_REQUEST,null);
         }
 
         // Check if the email is already taken
         if (userService.existsByEmail(registerRequest.getEmail())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email is already taken");
+            return ApiResponseHelper.successResponseWithDataAndMessage("Email is already taken", HttpStatus.BAD_REQUEST,null);
         }
 
 
@@ -79,7 +79,7 @@ public class UserController {
         for (Long moduleId : moduleIds) {
             Optional<ModuleEntity> moduleOptional = moduleRepository.findById(moduleId);
             if (!moduleOptional.isPresent()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Module with ID " + moduleId + " not found");
+                return ApiResponseHelper.successResponseWithDataAndMessage("Module not found", HttpStatus.BAD_REQUEST,null);
             }
             modules.add(moduleOptional.get());
         }
@@ -104,7 +104,7 @@ public class UserController {
         // Save the user (assuming the save method exists in the UserService)
         userService.saveUser(user);
 
-        return ResponseEntity.ok("User registered successfully");
+        return ApiResponseHelper.successResponseWithDataAndMessage("User registered successfully", HttpStatus.CREATED,null);
     }
 
 
