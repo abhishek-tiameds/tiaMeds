@@ -42,64 +42,7 @@ public class LabController {
         this.userLabService = userLabService;
     }
 
-    // create a new lab
-//    @PostMapping("/add-lab")
-//    public ResponseEntity<Map<String, Object>> addLab(
-//            @RequestBody LabRequestDTO labRequestDTO,
-//            @RequestHeader("Authorization") String token) {
-//
-//        // Validate token format
-//        Optional<User> currentUserOptional = userAuthService.authenticateUser(token);
-//        if (currentUserOptional.isEmpty()) {
-//            ApiResponse<String> response = new ApiResponse<>("error", "User not found", null);
-//            return new ResponseEntity(response, HttpStatus.UNAUTHORIZED);
-//        }
-//
-//        User currentUser = currentUserOptional.get();
-//
-//        // Check if the lab already exists
-//        if (userService.existsLabByName(labRequestDTO.getName())) {
-//            ApiResponse<String> response = new ApiResponse<>("error", "Lab already exists", null);
-//            return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
-//        }
-//
-//        // Create and save the new lab
-//        Lab lab = new Lab();
-//        lab.setName(labRequestDTO.getName());
-//        lab.setAddress(labRequestDTO.getAddress());
-//        lab.setCity(labRequestDTO.getCity());
-//        lab.setState(labRequestDTO.getState());
-//        lab.setDescription(labRequestDTO.getDescription());
-//        lab.setIsActive(true);
-//        lab.setCreatedBy(currentUser);
-//        labRepository.save(lab);
-//
-//        // Create DTOs for response
-//        UserResponseDTO userResponseDTO = new UserResponseDTO(
-//                currentUser.getId(),
-//                currentUser.getUsername(),
-//                currentUser.getEmail(),
-//                currentUser.getFirstName(),
-//                currentUser.getLastName()
-//        );
-//
-//        LabResponseDTO labResponseDTO = new LabResponseDTO(
-//                lab.getId(),
-//                lab.getName(),
-//                lab.getAddress(),
-//                lab.getCity(),
-//                lab.getState(),
-//                lab.getDescription(),
-//                userResponseDTO
-//        );
-//
-//        //become a member of the lab
-//
-//
-//        // Return success response
-//        return ApiResponseHelper.successResponseWithDataAndMessage("Lab created successfully", HttpStatus.OK, labResponseDTO);
-//
-//    }
+
 
     // get all labs created by user
     @GetMapping("/get-labs")
