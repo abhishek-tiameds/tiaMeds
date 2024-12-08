@@ -46,6 +46,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+
       - name: Push Docker image
         run: |
           docker push abhishek94733/tiameds:${{ github.sha }}
