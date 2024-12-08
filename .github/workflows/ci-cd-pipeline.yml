@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: '17'
-          distribution: 'adoptopenjdk'
+          distribution: 'temurin'  # Updated to Adoptium (temurin)
 
       - name: Build with Maven
         run: mvn clean install --no-transfer-progress
@@ -45,7 +45,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-
 
       - name: Push Docker image
         run: |
